@@ -1,173 +1,227 @@
-# Four-Wheel Mobile Robot Gazebo Simulation (No ROS 2)
+# Four-Wheel Mobile Robot Simulation & ROS 2 Jazzy Integration
 
-A minimal, fully autonomous four-wheel mobile robot simulation in **Gazebo Sim** (Gazebo Harmonic / `gz-sim8`) without any ROS 2 dependencies.
-
----
-
-## 1. Environment & Version
-
-- **Gazebo Suite**: Gazebo Harmonic
-- **Simulator Version**: `gz-sim8` (v8.15.0)
-- **Tools**: `gz-tools2`, `gz-msgs10`, `gz-transport13`, `sdformat14`
-- **Physics Engine**: DART (`gz-physics7-dartsim-plugin`)
-- **Host OS**: macOS (Apple Silicon / Darwin)
+A minimal, fully verified four-wheel mobile robot simulation in **Gazebo Sim** (Gazebo Harmonic / `gz-sim8`) integrated with **ROS 2 Jazzy Jalisco** and an interactive **Browser Web Visualizer (noVNC)**.
 
 ---
 
-## 2. Project Structure
+## 1. System Architecture
+
+The complete robotics stack runs inside an Ubuntu 24.04 ARM64 container on macOS (via Docker / Colima), completely isolating dependencies while enabling full 3D GUI visualization through any macOS web browser.
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│ macOS Host (Apple Silicon)                                             │
+│                                                                        │
+│   Web Browser (Safari / Chrome / Firefox)                              │
+│      └─▶ http://localhost:8080/vnc.html (3D Simulation View & Orbit)  │
+│                                                                        │
+│   Native macOS Gazebo Installation (Preserved & Untouched)             │
+│      └─▶ ./scripts/run_sim.sh (Optional native macOS-only mode)        │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ Port 8080 (HTTP + WebSockets)
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ Container: ros2_gazebo_robot (Ubuntu 24.04 ARM64)                      │
+│                                                                        │
+│   ┌────────────────────────────────────────────────────────────────┐   │
+│   │ ROS 2 Jazzy Jalisco                                            │   │
+│   │   • /cmd_vel (geometry_msgs/msg/Twist)                         │   │
+│   │   • /odom    (nav_msgs/msg/Odometry)                           │   │
+│   │   • /tf      (tf2_msgs/msg/TFMessage)                          │   │
+│   └───────────────────────▲─────────────────▲──────────────────────┘   │
+│                           │                 │                          │
+│               ros_gz_bridge (parameter_bridge)                         │
+│                           │                 │                          │
+│   ┌───────────────────────▼─────────────────▼──────────────────────┐   │
+│   │ Gazebo Harmonic (gz-sim 8.15.0)                                │   │
+│   │   • Gazebo Server (Headless DART physics)                      │   │
+│   │   • DiffDrive System Plugin (Skid-steer 4WD kinematics)        │   │
+│   │   • Gazebo GUI Client (3D OGRE2 viewport)                      │   │
+│   └────────────────────────────────┬───────────────────────────────┘   │
+│                                    │ Display :1 (llvmpipe OpenGL 4.5)  │
+│   ┌────────────────────────────────▼───────────────────────────────┐   │
+│   │ Web Visualization Stack                                        │   │
+│   │   • Xvfb (Virtual Framebuffer, 1280x800x24)                    │   │
+│   │   • Openbox (Window Manager)                                   │   │
+│   │   • x11vnc (VNC Server on port 5900)                           │   │
+│   │   • Websockify + noVNC (HTML5 Canvas web client on port 8080) │   │
+│   └────────────────────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2. Directory Structure
 
 ```
 gazebo_four_wheel_robot/
+├── docker/
+│   ├── Dockerfile            # Ubuntu 24.04 ARM64 + ROS 2 Jazzy + Gazebo Harmonic + noVNC
+│   └── start_stack.sh        # Container startup script (Xvfb, openbox, vnc, gz-server, bridge, gz-gui)
+├── docker-compose.yml        # Docker Compose service definition with port 8080 & volume mount
 ├── models/
 │   └── four_wheel_robot/
-│       ├── model.config      # Model metadata and description
+│       ├── model.config      # Model metadata
 │       └── model.sdf         # 4-wheel robot SDF definition (chassis, 4 wheels, DiffDrive plugin)
 ├── worlds/
 │   └── robot_world.sdf       # Simulation world (ground plane, sun, walls, obstacles, robot)
-├── plugins/
-│   └── README.md             # Overview of native Gazebo Sim plugins utilized
 ├── scripts/
-│   ├── run_sim.sh            # One-click launcher for the simulation
-│   └── test_movement.sh      # Automated CLI test demonstrating all 5 movement states
-└── README.md                 # Documentation and test report
+│   ├── start_docker_sim.sh   # One-click start: builds/boots container & opens browser visualizer
+│   ├── stop_docker_sim.sh    # Stops container stack cleanly
+│   ├── test_ros2_cmd_vel.sh  # Automated ROS 2 motion test (forward, turn, stop)
+│   ├── echo_ros2_odom.sh     # Echoes ROS 2 /odom topic
+│   ├── echo_ros2_tf.sh       # Echoes ROS 2 /tf topic
+│   ├── open_rviz.sh          # Launches RViz2 in the virtual desktop
+│   ├── run_sim.sh            # Native macOS Gazebo launcher (preserved)
+│   └── test_movement.sh      # Native macOS Gazebo transport test (preserved)
+└── README.md                 # Complete documentation
 ```
 
 ---
 
-## 3. Robot Design & Kinematics
+## 3. Quick Start (ROS 2 + Gazebo + Web GUI)
 
-The robot is a skid-steer 4-wheel drive mobile robot built strictly with basic geometric primitives:
+### Step 1: Launch the Stack
 
-- **Chassis**:
-  - Shape: Rectangular box ($0.8\,\text{m} \times 0.5\,\text{m} \times 0.15\,\text{m}$)
-  - Mass: $12.0\,\text{kg}$
-  - Color: Vivid Blue
-  - Clearance: $12.5\,\text{cm}$ above ground
-- **Wheels (4 Cylinders)**:
-  - Shape: Cylinders ($R = 0.15\,\text{m}$, Width $= 0.08\,\text{m}$)
-  - Placement:
-    - Front-Left: $(+0.25, +0.30, 0.0)$ relative to chassis
-    - Rear-Left: $(-0.25, +0.30, 0.0)$ relative to chassis
-    - Front-Right: $(+0.25, -0.30, 0.0)$ relative to chassis
-    - Rear-Right: $(-0.25, -0.30, 0.0)$ relative to chassis
-  - Wheelbase: $0.50\,\text{m}$ | Track Width: $0.60\,\text{m}$
-  - Mass: $2.0\,\text{kg}$ each
-  - Joints: 4 revolute joints with rotation axis along local $\mathbf{Y}$ ($[0, 1, 0]$)
-  - Surface Friction: Directional ODE friction ($\mu_1 = 1.0$ forward traction along $\mathbf{X}$, $\mu_2 = 0.5$, $\text{slip}_2 = 0.05$ lateral compliance for smooth skid-steering)
+Run the launch script from the project root:
 
----
-
-## 4. How the Robot is Controlled (Gazebo-Native)
-
-Movement control is provided by the native Gazebo Sim plugin:
-`gz-sim-diff-drive-system` (`gz::sim::systems::DiffDrive`).
-
-- **Control Input Topic**: `/cmd_vel` (`gz.msgs.Twist`)
-- **Odometry Feedback Topic**: `/odom` (`gz.msgs.Odometry`)
-- **Transform Broadcast**: `/model/four_wheel_robot/tf` (`gz.msgs.Pose_V`)
-
-Both left wheels (`front_left_wheel_joint`, `rear_left_wheel_joint`) and both right wheels (`front_right_wheel_joint`, `rear_right_wheel_joint`) are controlled in coordinated skid-steering mode.
-
----
-
-## 5. Launch Commands
-
-### Launching with Gazebo GUI (Visual Mode)
-
-> [!NOTE]
-> On macOS, `gz sim` requires running the server (`-s`) and GUI (`-g`) as separate processes due to macOS AppKit/Qt main thread constraints (see Gazebo issue [#44](https://github.com/gazebosim/gz-sim/issues/44)).
-
-Using the helper script (handles server backgrounding, GUI launch, and exit cleanup automatically):
 ```bash
+./scripts/start_docker_sim.sh
+```
+
+Or via standard Docker Compose:
+
+```bash
+docker compose up -d --build
+```
+
+### Step 2: Open the 3D Simulation View
+
+Visit the following URL in Safari, Chrome, or Firefox on macOS:
+
+```
+http://localhost:8080/vnc.html?autoconnect=true&resize=remote
+```
+
+You will see the **Gazebo Sim GUI** rendered in real-time with:
+- Full 3D camera controls: Left-click to orbit, Right-click to zoom, Middle-click to pan.
+- The 4-wheel robot, arena walls, and obstacle blocks.
+- Real-time simulation state and entity tree.
+
+---
+
+## 4. Controlling & Verifying via ROS 2
+
+### Automated Motion Test
+
+Run the pre-configured movement test script:
+
+```bash
+./scripts/test_ros2_cmd_vel.sh
+```
+
+This commands:
+1. Drive forward ($1.0\,\text{m/s}$ for 3s).
+2. Turn clockwise ($-0.8\,\text{rad/s}$ for 2s).
+3. Stop ($0.0\,\text{m/s}$).
+
+### Publishing Custom Velocity Commands
+
+Publish directly from your macOS terminal into the container:
+
+```bash
+# Drive Forward (1.0 m/s)
+docker exec ros2_gazebo_robot bash -c "source /opt/ros/jazzy/setup.bash && ros2 topic pub /cmd_vel geometry_msgs/msg/Twist '{linear: {x: 1.0}, angular: {z: 0.0}}' -1"
+
+# Turn Left (1.0 rad/s)
+docker exec ros2_gazebo_robot bash -c "source /opt/ros/jazzy/setup.bash && ros2 topic pub /cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.0}, angular: {z: 1.0}}' -1"
+
+# Stop
+docker exec ros2_gazebo_robot bash -c "source /opt/ros/jazzy/setup.bash && ros2 topic pub /cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.0}, angular: {z: 0.0}}' -1"
+```
+
+### Monitoring Odometry (`/odom`)
+
+Inspect the streaming odometry calculated by Gazebo and bridged into ROS 2:
+
+```bash
+./scripts/echo_ros2_odom.sh
+```
+
+Sample output:
+```yaml
+header:
+  stamp:
+    sec: 42
+    nanosec: 150000000
+  frame_id: odom
+child_frame_id: chassis
+pose:
+  pose:
+    position:
+      x: 2.8541
+      y: 0.0001
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: -0.982
+      w: -0.188
+twist:
+  twist:
+    linear: {x: 0.0, y: 0.0, z: 0.0}
+    angular: {x: 0.0, y: 0.0, z: 0.0}
+```
+
+### Monitoring TF Frames (`/tf`)
+
+Inspect the live transform `odom -> chassis`:
+
+```bash
+./scripts/echo_ros2_tf.sh
+```
+
+### Optional: Launch RViz2
+
+To visualize ROS 2 odometry and TF frames in RViz2 alongside Gazebo Sim:
+
+```bash
+./scripts/open_rviz.sh
+```
+
+RViz2 will appear inside the web browser desktop on `http://localhost:8080/vnc.html`.
+
+### Stopping the Stack
+
+```bash
+./scripts/stop_docker_sim.sh
+```
+
+---
+
+## 5. Native macOS Gazebo Simulation (Preserved)
+
+Your native macOS Gazebo Harmonic installation remains completely untouched and functional:
+
+```bash
+# Launch native macOS Gazebo GUI & Server
 ./scripts/run_sim.sh
-```
 
-Or manually in two terminals:
-- **Terminal 1 (Server)**:
-  ```bash
-  export GZ_IP=127.0.0.1
-  gz sim -s -r worlds/robot_world.sdf
-  ```
-- **Terminal 2 (GUI)**:
-  ```bash
-  export GZ_IP=127.0.0.1
-  gz sim -g
-  ```
-
-### Launching in Headless Server Mode (CLI / Background)
-
-```bash
-export GZ_IP=127.0.0.1
-gz sim -s -r worlds/robot_world.sdf
-```
-
----
-
-## 6. Testing Movement via CLI
-
-All commands use pure Gazebo transport (`gz topic`):
-
-### 1. Move Forward (1.0 m/s)
-```bash
-gz topic -t "/cmd_vel" -m gz.msgs.Twist -p "linear: {x: 1.0}, angular: {z: 0.0}"
-```
-
-### 2. Move Backward (-1.0 m/s)
-```bash
-gz topic -t "/cmd_vel" -m gz.msgs.Twist -p "linear: {x: -1.0}, angular: {z: 0.0}"
-```
-
-### 3. Turn Left (1.0 rad/s counter-clockwise)
-```bash
-gz topic -t "/cmd_vel" -m gz.msgs.Twist -p "linear: {x: 0.0}, angular: {z: 1.0}"
-```
-
-### 4. Turn Right (-1.0 rad/s clockwise)
-```bash
-gz topic -t "/cmd_vel" -m gz.msgs.Twist -p "linear: {x: 0.0}, angular: {z: -1.0}"
-```
-
-### 5. Stop (0.0 m/s)
-```bash
-gz topic -t "/cmd_vel" -m gz.msgs.Twist -p "linear: {x: 0.0}, angular: {z: 0.0}"
-```
-
-### Inspecting Odometry in Real Time
-```bash
-gz topic -e -t /odom -n 1
-```
-
-Or execute the complete test suite automatically:
-```bash
+# Run native Gazebo transport movement test
 ./scripts/test_movement.sh
 ```
 
 ---
 
-## 7. Validation Results
+## 6. Technical Design Decisions & Architecture Insights
 
-| Test Case | Commanded Input | Observed Twist / Pose Change | Result |
-| :--- | :--- | :--- | :--- |
-| **Spawn Stability** | Idle | $z = 0.100\,\text{m}$ (wheels touch $z=0.00$), tilt angles $\approx 0^\circ$ | **PASS** |
-| **Forward** | `linear.x = 1.0` | $x$ progressed $0.0 \to +2.08\,\text{m}$, linear velocity $= 1.0\,\text{m/s}$ | **PASS** |
-| **Stop** | `linear.x = 0.0` | Velocity returned to $0.0\,\text{m/s}$, stopped cleanly | **PASS** |
-| **Backward** | `linear.x = -1.0` | $x$ progressed $+6.44 \to +4.38\,\text{m}$, linear velocity $= -1.0\,\text{m/s}$ | **PASS** |
-| **Turn Left** | `angular.z = +1.0` | Angular velocity $= +1.0\,\text{rad/s}$, heading turned CCW | **PASS** |
-| **Turn Right** | `angular.z = -1.0` | Angular velocity $= -1.0\,\text{rad/s}$, heading turned CW | **PASS** |
-| **Post-run Stability** | Repeated motions | Height stayed at $z = 0.10\,\text{m}$, roll/pitch $< 10^{-10}\,\text{rad}$ | **PASS** |
+1. **Why Full Containerization with noVNC?**
+   - **ZeroMQ Dynamic Ports**: Gazebo Transport binds ephemeral ZeroMQ TCP ports for each topic and service and relies on UDP multicast discovery. Because macOS container networking (Colima/Docker with `gvproxy` / SLIRP NAT) cannot dynamically forward unpredictable ephemeral ports or bridge multicast across macOS and Linux, running Gazebo Server and GUI in the same container guarantees zero network packet loss and 60 FPS performance.
+   - **Host Cleanliness**: macOS host requires zero X11/XQuartz installations, zero security token fiddling, and zero firewall modifications.
+   - **Hardware-Free Software Rendering**: The container leverages Mesa `llvmpipe` providing **OpenGL 4.5**, enabling Gazebo's OGRE2 rendering engine to run smoothly without requiring host GPU passthrough.
+   - **Browser-Accessible**: Any standard browser (Safari, Chrome) connects directly to `http://localhost:8080` via HTML5 WebSockets.
 
----
-
-## 8. Problems Encountered & Resolutions
-
-1. **Multicast UDP Routing on macOS**:
-   - *Problem*: On macOS, when running `gz topic` or `gz sim`, Gazebo Transport's discovery mechanism raised `Exception sending a multicast message: No route to host`.
-   - *Resolution*: Set `GZ_IP=127.0.0.1`. This forces Gazebo Transport to bind to the local loopback interface (`lo0`), resolving all discovery calls cleanly without network errors.
-
-2. **Model Path Resolution without ROS**:
-   - *Problem*: Standard relative path `<uri>../models/four_wheel_robot</uri>` inside the world SDF is rejected by SDFormat's parser.
-   - *Resolution*: Configured `<uri>package://models/four_wheel_robot</uri>` along with a compliant `model.config`. SDFormat 1.8 automatically resolves `package://` relative to the current workspace root, allowing `gz sim worlds/robot_world.sdf` to load without complex environment setups.
-
-3. **Skid-Steer Lateral Resistance**:
-   - *Problem*: Four rigid wheels without lateral compliance can induce excessive friction and chattering during zero-radius yaw rotations.
-   - *Resolution*: Tuned the wheel surface contact parameters with anisotropic friction ($\mu_1 = 1.0$ along the rolling axis, $\mu_2 = 0.5$ laterally with `slip2 = 0.05`), providing crisp forward traction while enabling smooth rotational sliding.
+2. **Topic Bridging (`ros_gz_bridge`)**:
+   - `parameter_bridge` bridges bidirectional velocity `/cmd_vel` (`geometry_msgs/msg/Twist` $\leftrightarrow$ `gz.msgs.Twist`).
+   - Streams Gazebo `/odom` (`gz.msgs.Odometry`) to ROS 2 `/odom` (`nav_msgs/msg/Odometry`).
+   - Bridges model pose `/model/four_wheel_robot/tf` (`gz.msgs.Pose_V`) remapped to standard ROS 2 `/tf` (`tf2_msgs/msg/TFMessage`).

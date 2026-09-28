@@ -1,0 +1,15 @@
+services:
+  robotics_stack:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: ros2_jazzy_gz_sim:latest
+    container_name: ros2_gazebo_robot
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/workspace/gazebo_four_wheel_robot
+    working_dir: /workspace/gazebo_four_wheel_robot
+    shm_size: "1gb"
+    command: ["/workspace/gazebo_four_wheel_robot/docker/start_stack.sh"]
