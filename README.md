@@ -28,6 +28,7 @@ The complete robotics stack runs inside an Ubuntu 24.04 ARM64 container on macOS
 │   │   • /cmd_vel (geometry_msgs/msg/Twist)                         │   │
 │   │   • /odom    (nav_msgs/msg/Odometry)                           │   │
 │   │   • /tf      (tf2_msgs/msg/TFMessage)                          │   │
+│   │   • /scan    (sensor_msgs/msg/LaserScan)                       │   │
 │   └───────────────────────▲─────────────────▲──────────────────────┘   │
 │                           │                 │                          │
 │               ros_gz_bridge (parameter_bridge)                         │
@@ -71,6 +72,7 @@ gazebo_four_wheel_robot/
 │   ├── test_ros2_cmd_vel.sh  # Automated ROS 2 motion test (forward, turn, stop)
 │   ├── echo_ros2_odom.sh     # Echoes ROS 2 /odom topic
 │   ├── echo_ros2_tf.sh       # Echoes ROS 2 /tf topic
+│   ├── echo_ros2_scan.sh     # Echoes ROS 2 /scan (LaserScan) topic
 │   ├── open_rviz.sh          # Launches RViz2 in the virtual desktop
 │   ├── run_sim.sh            # Native macOS Gazebo launcher (preserved)
 │   └── test_movement.sh      # Native macOS Gazebo transport test (preserved)
@@ -138,6 +140,29 @@ docker exec ros2_gazebo_robot bash -c "source /opt/ros/jazzy/setup.bash && ros2 
 
 # Stop
 docker exec ros2_gazebo_robot bash -c "source /opt/ros/jazzy/setup.bash && ros2 topic pub /cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.0}, angular: {z: 0.0}}' -1"
+```
+
+### Monitoring 2D LiDAR Scan (`/scan`)
+
+Inspect the streaming 2D laser scan:
+
+```bash
+./scripts/echo_ros2_scan.sh
+```
+
+Sample output:
+```yaml
+header:
+  stamp:
+    sec: 41
+    nanosec: 200000000
+  frame_id: laser_link
+angle_min: -3.1415927
+angle_max: 3.1415927
+angle_increment: 0.0175019
+range_min: 0.1
+range_max: 10.0
+ranges: [ ... ]
 ```
 
 ### Monitoring Odometry (`/odom`)
