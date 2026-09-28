@@ -29,6 +29,7 @@ def generate_launch_description():
     )
 
     lifecycle_nodes = [
+        'map_server',
         'controller_server',
         'planner_server',
         'behavior_server',
@@ -36,6 +37,15 @@ def generate_launch_description():
     ]
 
     remappings = [('/tf', 'tf'), ('/tf_static', 'tf_static')]
+
+    map_server_cmd = Node(
+        package='nav2_map_server',
+        executable='map_server',
+        name='map_server',
+        output='screen',
+        parameters=[params_file],
+        remappings=remappings
+    )
 
     controller_cmd = Node(
         package='nav2_controller',
@@ -88,6 +98,7 @@ def generate_launch_description():
     ld.add_action(declare_params_file_cmd)
     ld.add_action(declare_use_sim_time_cmd)
     ld.add_action(declare_autostart_cmd)
+    ld.add_action(map_server_cmd)
     ld.add_action(controller_cmd)
     ld.add_action(planner_cmd)
     ld.add_action(behavior_cmd)

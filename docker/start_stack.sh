@@ -17,6 +17,7 @@ export DISPLAY=:1
 export RESOLUTION="${RESOLUTION:-1280x800x24}"
 
 # 1. Start Virtual Framebuffer (Xvfb)
+rm -f /tmp/.X1-lock /tmp/.X11-unix/X1
 echo "[1/6] Starting virtual framebuffer Xvfb on display ${DISPLAY} (${RESOLUTION})..."
 Xvfb ${DISPLAY} -screen 0 ${RESOLUTION} &
 XVFB_PID=$!
@@ -65,7 +66,7 @@ ros2 run tf2_ros static_transform_publisher \
 STATIC_TF_PID=$!
 
 ros2 run tf2_ros static_transform_publisher \
-    --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 \
+    --x -1.8 --y 0 --z 0 --roll 0 --pitch 0 --yaw 1.5708 \
     --frame-id map --child-frame-id odom &
 MAP_TF_PID=$!
 sleep 1
