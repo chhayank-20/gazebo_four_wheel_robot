@@ -70,7 +70,13 @@ ros2 run tf2_ros static_transform_publisher \
 MAP_TF_PID=$!
 sleep 1
 
-# 8. Start Gazebo Sim GUI on the virtual display
+# 8. Start Nav2 Navigation Stack
+echo "Starting Nav2 Navigation Stack..."
+ros2 launch /workspace/gazebo_four_wheel_robot/launch/nav2.launch.py > /tmp/nav2.log 2>&1 &
+NAV2_PID=$!
+sleep 2
+
+# 9. Start Gazebo Sim GUI on the virtual display
 echo "Launching Gazebo Sim GUI on virtual display..."
 gz sim -g &
 GZ_GUI_PID=$!
@@ -85,6 +91,7 @@ cleanup() {
     echo ""
     echo "Stopping all processes..."
     kill ${GZ_GUI_PID} 2>/dev/null || true
+    kill ${NAV2_PID} 2>/dev/null || true
     kill ${MAP_TF_PID} 2>/dev/null || true
     kill ${STATIC_TF_PID} 2>/dev/null || true
     kill ${BRIDGE_PID} 2>/dev/null || true

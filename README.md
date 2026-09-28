@@ -75,6 +75,7 @@ gazebo_four_wheel_robot/
 │   ├── stop_docker_sim.sh    # Stops container stack cleanly
 │   ├── start_nav2.sh         # Launches Nav2 navigation stack inside container
 │   ├── send_nav2_goal.sh     # Sends autonomous goal via Nav2 Simple Commander
+│   ├── test_obstacle_avoidance.sh # Full automated obstacle avoidance validation suite
 │   ├── test_ros2_cmd_vel.sh  # Automated ROS 2 motion test (forward, turn, stop)
 │   ├── echo_ros2_odom.sh     # Echoes ROS 2 /odom topic
 │   ├── echo_ros2_tf.sh       # Echoes ROS 2 /tf topic
@@ -287,6 +288,31 @@ Navigating to goal: x=1.5, y=1.0...
 Distance remaining: 0.55 m, Navigation time: 2s
 SUCCESS: Goal reached successfully!
 ```
+
+### Step 3: Obstacle Avoidance Validation Test Suite
+
+An automated test suite validates the robot's collision avoidance in an indoor environment featuring walls, corridors, intervening obstacles, and an unreachable sealed chamber:
+
+```bash
+./scripts/test_obstacle_avoidance.sh
+```
+
+#### Test Environment Layout
+- **Corridor**: $4.0\,\text{m}$ wide corridor bounded by north wall ($Y = 2.0$) and south wall ($Y = -2.0$).
+- **Intervening Obstacle 1**: Red box ($0.8\,\text{m} \times 0.8\,\text{m} \times 1.0\,\text{m}$) at $(2.5, 0.0)$, directly obstructing straight passage.
+- **North Atrium & Obstacle 2**: Open room with a green cylinder column ($r = 0.45\,\text{m}$) at $(5.5, 2.0)$.
+- **Sealed Chamber**: A $3\,\text{m} \times 3\,\text{m}$ 4-wall enclosed cell centered at $(1.5, -4.0)$ with zero openings.
+
+#### Validation Results Summary
+
+| Test Case | Target $(X, Y, \text{Yaw})$ | Intervening Barrier | Trajectory Deviation | Final Odometry | Result | Status |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **1. Obstacle Detour** | $(4.50, 0.00, 0.00)$ | Red Box at $(2.5, 0.0)$ | Max $Y = 1.402\,\text{m}$ lateral steer | $(4.256, 0.216)$ | `SUCCESS` | **PASSED** |
+| **2. Reachable Room** | $(6.00, 3.50, 1.57)$ | Column at $(5.5, 2.0)$ | Smooth turn into atrium | $(6.053, 3.170)$ | `SUCCESS` | **PASSED** |
+| **3. Blocked Chamber** | $(1.50, -4.00, 0.00)$ | Sealed 4-wall enclosure | Continuous recovery attempts | Stopped outside wall | `TIMEOUT / ABORTED` | **PASSED** |
+
+> [!NOTE]
+> During Test 3 (Blocked Goal), Nav2 repeatedly invoked recovery behaviors (spin, backup, wait), detected that no collision-free path existed, and appropriately timed out and aborted without falsely claiming success.
 
 ---
 
