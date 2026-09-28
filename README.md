@@ -56,19 +56,25 @@ The complete robotics stack runs inside an Ubuntu 24.04 ARM64 container on macOS
 
 ```
 gazebo_four_wheel_robot/
+├── config/
+│   └── nav2_params.yaml      # Nav2 parameters (Navfn, RegulatedPurePursuit, rolling costmaps)
 ├── docker/
-│   ├── Dockerfile            # Ubuntu 24.04 ARM64 + ROS 2 Jazzy + Gazebo Harmonic + noVNC
-│   └── start_stack.sh        # Container startup script (Xvfb, openbox, vnc, gz-server, bridge, gz-gui)
+│   ├── Dockerfile            # Ubuntu 24.04 ARM64 + ROS 2 Jazzy + Gazebo Harmonic + noVNC + Nav2
+│   └── start_stack.sh        # Container startup script (Xvfb, openbox, vnc, gz-server, bridge, gz-gui, TF)
 ├── docker-compose.yml        # Docker Compose service definition with port 8080 & volume mount
+├── launch/
+│   └── nav2.launch.py        # Minimal Nav2 lifecycle launch (controller, planner, behaviors, bt_navigator)
 ├── models/
 │   └── four_wheel_robot/
 │       ├── model.config      # Model metadata
-│       └── model.sdf         # 4-wheel robot SDF definition (chassis, 4 wheels, DiffDrive plugin)
+│       └── model.sdf         # 4-wheel robot SDF definition (base_link, 4 wheels, LiDAR, DiffDrive)
 ├── worlds/
 │   └── robot_world.sdf       # Simulation world (ground plane, sun, walls, obstacles, robot)
 ├── scripts/
 │   ├── start_docker_sim.sh   # One-click start: builds/boots container & opens browser visualizer
 │   ├── stop_docker_sim.sh    # Stops container stack cleanly
+│   ├── start_nav2.sh         # Launches Nav2 navigation stack inside container
+│   ├── send_nav2_goal.sh     # Sends autonomous goal via Nav2 Simple Commander
 │   ├── test_ros2_cmd_vel.sh  # Automated ROS 2 motion test (forward, turn, stop)
 │   ├── echo_ros2_odom.sh     # Echoes ROS 2 /odom topic
 │   ├── echo_ros2_tf.sh       # Echoes ROS 2 /tf topic
@@ -180,7 +186,7 @@ header:
     sec: 42
     nanosec: 150000000
   frame_id: odom
-child_frame_id: chassis
+child_frame_id: base_link
 pose:
   pose:
     position:
@@ -200,15 +206,23 @@ twist:
 
 ### Monitoring TF Frames (`/tf`)
 
-Inspect the live transform `odom -> chassis`:
+Inspect the live transforms `map -> odom -> base_link -> laser_link`:
 
 ```bash
 ./scripts/echo_ros2_tf.sh
 ```
 
+### Monitoring 2D LiDAR Sensor (`/scan`)
+
+Inspect the live 360° laser scan:
+
+```bash
+./scripts/echo_ros2_scan.sh
+```
+
 ### Optional: Launch RViz2
 
-To visualize ROS 2 odometry and TF frames in RViz2 alongside Gazebo Sim:
+To visualize ROS 2 odometry, TF frames, LiDAR scans, and costmaps in RViz2:
 
 ```bash
 ./scripts/open_rviz.sh
@@ -224,7 +238,59 @@ RViz2 will appear inside the web browser desktop on `http://localhost:8080/vnc.h
 
 ---
 
-## 5. Native macOS Gazebo Simulation (Preserved)
+## 5. Autonomous Navigation (Nav2)
+
+The robot is equipped with a minimal, production-grade **Nav2 (ROS 2 Navigation 2)** stack in ROS 2 Jazzy. It operates in mapless / odometry-driven rolling-window mode using live 360° LiDAR data, eliminating the need for pre-built maps or AMCL particle filters.
+
+### Key Navigation Components
+- **Global Planner**: `nav2_navfn_planner::NavfnPlanner` with A* search over a $25\,\text{m} \times 25\,\text{m}$ rolling costmap.
+- **Local Controller**: `nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController` with adaptive lookahead and curvature-based velocity scaling.
+- **Costmaps**: Rolling-window global ($25\,\text{m}$) and local ($6\,\text{m}$) costmaps with `ObstacleLayer` (2D LiDAR raytracing up to 10 m) and `InflationLayer` ($0.55\,\text{m}$ safety radius).
+- **TF Architecture**: Fully connected REP-105 standard tree:
+  ```
+  map  ──[static]──▶  odom  ──[DiffDrive odometry]──▶  base_link  ──[static]──▶  laser_link
+  ```
+
+### Step 1: Launch the Nav2 Stack
+
+In a new terminal:
+```bash
+./scripts/start_nav2.sh
+```
+
+This brings up `controller_server`, `planner_server`, `behavior_server`, and `bt_navigator` through the `nav2_lifecycle_manager`.
+
+### Step 2: Dispatch Autonomous Navigation Goals
+
+Send the robot to any coordinate $(X, Y, \text{Yaw})$:
+
+```bash
+# Drive forward 1.5 meters:
+./scripts/send_nav2_goal.sh 1.5 0.0 0.0
+
+# Drive to an off-axis coordinate with turning:
+./scripts/send_nav2_goal.sh 1.5 1.0 0.0
+
+# Return autonomously to origin:
+./scripts/send_nav2_goal.sh 0.0 0.0 0.0
+```
+
+### Navigation Execution Output Example
+```
+==========================================================
+ Sending Autonomous Nav2 Goal: (1.5, 1.0, yaw=0.0)
+==========================================================
+[INFO] [basic_navigator]: Nav2 is ready for use!
+[INFO] [basic_navigator]: Navigating to goal: 1.5 1.0...
+Waiting for Nav2 to become active...
+Navigating to goal: x=1.5, y=1.0...
+Distance remaining: 0.55 m, Navigation time: 2s
+SUCCESS: Goal reached successfully!
+```
+
+---
+
+## 6. Native macOS Gazebo Simulation (Preserved)
 
 Your native macOS Gazebo Harmonic installation remains completely untouched and functional:
 
@@ -238,7 +304,7 @@ Your native macOS Gazebo Harmonic installation remains completely untouched and 
 
 ---
 
-## 6. Technical Design Decisions & Architecture Insights
+## 7. Technical Design Decisions & Architecture Insights
 
 1. **Why Full Containerization with noVNC?**
    - **ZeroMQ Dynamic Ports**: Gazebo Transport binds ephemeral ZeroMQ TCP ports for each topic and service and relies on UDP multicast discovery. Because macOS container networking (Colima/Docker with `gvproxy` / SLIRP NAT) cannot dynamically forward unpredictable ephemeral ports or bridge multicast across macOS and Linux, running Gazebo Server and GUI in the same container guarantees zero network packet loss and 60 FPS performance.
@@ -246,7 +312,10 @@ Your native macOS Gazebo Harmonic installation remains completely untouched and 
    - **Hardware-Free Software Rendering**: The container leverages Mesa `llvmpipe` providing **OpenGL 4.5**, enabling Gazebo's OGRE2 rendering engine to run smoothly without requiring host GPU passthrough.
    - **Browser-Accessible**: Any standard browser (Safari, Chrome) connects directly to `http://localhost:8080` via HTML5 WebSockets.
 
-2. **Topic Bridging (`ros_gz_bridge`)**:
+2. **Topic Bridging & Frame Standards (`ros_gz_bridge`)**:
    - `parameter_bridge` bridges bidirectional velocity `/cmd_vel` (`geometry_msgs/msg/Twist` $\leftrightarrow$ `gz.msgs.Twist`).
    - Streams Gazebo `/odom` (`gz.msgs.Odometry`) to ROS 2 `/odom` (`nav_msgs/msg/Odometry`).
    - Bridges model pose `/model/four_wheel_robot/tf` (`gz.msgs.Pose_V`) remapped to standard ROS 2 `/tf` (`tf2_msgs/msg/TFMessage`).
+   - Bridges Gazebo GPU Ray / LiDAR sensor to ROS 2 `/scan` (`sensor_msgs/msg/LaserScan`).
+   - Bridges simulation time `/clock` (`rosgraph_msgs/msg/Clock`) to keep ROS 2 Nav2 synchronized with Gazebo physics.
+   - Maintains REP-105 standard TF tree (`map -> odom -> base_link -> laser_link`).

@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-jazzy-tf2-ros \
     ros-jazzy-tf2-geometry-msgs \
     ros-jazzy-rviz2 \
+    ros-jazzy-navigation2 \
+    ros-jazzy-nav2-simple-commander \
     xvfb \
     openbox \
     x11vnc \
