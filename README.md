@@ -74,17 +74,25 @@ Both left wheels (`front_left_wheel_joint`, `rear_left_wheel_joint`) and both ri
 
 ### Launching with Gazebo GUI (Visual Mode)
 
-From the `gazebo_four_wheel_robot` directory:
+> [!NOTE]
+> On macOS, `gz sim` requires running the server (`-s`) and GUI (`-g`) as separate processes due to macOS AppKit/Qt main thread constraints (see Gazebo issue [#44](https://github.com/gazebosim/gz-sim/issues/44)).
 
-```bash
-export GZ_IP=127.0.0.1
-gz sim -r worlds/robot_world.sdf
-```
-
-Or using the helper script:
+Using the helper script (handles server backgrounding, GUI launch, and exit cleanup automatically):
 ```bash
 ./scripts/run_sim.sh
 ```
+
+Or manually in two terminals:
+- **Terminal 1 (Server)**:
+  ```bash
+  export GZ_IP=127.0.0.1
+  gz sim -s -r worlds/robot_world.sdf
+  ```
+- **Terminal 2 (GUI)**:
+  ```bash
+  export GZ_IP=127.0.0.1
+  gz sim -g
+  ```
 
 ### Launching in Headless Server Mode (CLI / Background)
 

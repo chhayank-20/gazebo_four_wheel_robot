@@ -11,7 +11,26 @@ cd "$PROJECT_DIR"
 echo "=========================================================="
 echo " Launching Gazebo Sim Four-Wheel Robot Simulation"
 echo " World: worlds/robot_world.sdf"
-echo " (Close window or press Ctrl+C to exit)"
+echo " (Server running in background, GUI in foreground)"
+echo " (Close GUI window or press Ctrl+C to exit)"
 echo "=========================================================="
 
-gz sim -r worlds/robot_world.sdf "$@"
+# Cleanup function to kill server when GUI exits
+cleanup() {
+    echo -e "\nShutting down Gazebo server..."
+    if [ -n "$SERVER_PID" ]; then
+        kill "$SERVER_PID" 2>/dev/null || true
+        wait "$SERVER_PID" 2>/dev/null || true
+    fi
+}
+trap cleanup EXIT INT TERM
+
+# 1. Start Gazebo Server in the background (-s)
+gz sim -s -r worlds/robot_world.sdf "$@" &
+SERVER_PID=$!
+
+# Give the server a moment to initialize physics and topics
+sleep 2
+
+# 2. Start Gazebo GUI in the foreground (-g)
+gz sim -g
