@@ -1,3 +1,5 @@
 .DS_Store
 *.log
 core*
+__pycache__/
+*.pyc
