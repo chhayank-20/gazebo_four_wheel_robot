@@ -243,8 +243,8 @@ def navigate_leg(navigator, leg):
 
 def main():
     parser = argparse.ArgumentParser(description="Test Office Autonomous Navigation with Nav2")
-    parser.add_argument("--leg", type=str, default="all",
-                        help="Leg to run: 1, 2, 3, 4, or all")
+    parser.add_argument("--leg", type=str, default="demo",
+                        help="Leg to run: demo (short demo: Lobby -> Experience Centre -> Board Room), all (full tour), or 1, 2, 3, 4")
     parser.add_argument("--report", type=str,
                         default="/workspace/gazebo_four_wheel_robot/office_nav_report.json",
                         help="Path to output JSON report")
@@ -266,6 +266,8 @@ def main():
 
     if args.leg == "all":
         legs_to_run = TOUR_LEGS
+    elif args.leg in ("demo", "short"):
+        legs_to_run = [l for l in TOUR_LEGS if l["leg_id"] in (1, 2)]
     elif args.leg.isdigit():
         idx = int(args.leg)
         legs_to_run = [l for l in TOUR_LEGS if l["leg_id"] == idx]
@@ -273,7 +275,7 @@ def main():
             print(f"No leg with id {idx}")
             sys.exit(1)
     else:
-        print(f"Unknown leg: {args.leg}. Use 1, 2, 3, 4, or all.")
+        print(f"Unknown leg: {args.leg}. Use demo, all, or 1, 2, 3, 4.")
         sys.exit(1)
 
     total_start = time.time()
