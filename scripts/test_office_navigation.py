@@ -18,6 +18,7 @@ import time
 import math
 import json
 import argparse
+import urllib.request
 import rclpy
 from rclpy.node import Node
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
@@ -136,50 +137,86 @@ def make_pose_stamped(navigator, x, y, yaw, frame_id="map"):
 
 
 def wait_for_completion(navigator, timeout, leg_name, step_label=""):
-    """Poll until task is complete or timeout. Returns (success, elapsed, trajectory)."""
+    """Poll until task is complete or timeout. Returns (success, elapsed, trajectory, metrics)."""
     start_time = time.time()
     trajectory = []
     step = 0
+    max_linear_vel = 0.0
+    sum_moving_vel = 0.0
+    moving_count = 0
+    min_lidar = 999.0
+    final_recoveries = 0
 
     while not navigator.isTaskComplete():
         feedback = navigator.getFeedback()
         step += 1
         elapsed = time.time() - start_time
 
+        cur_vel = 0.0
+        try:
+            with urllib.request.urlopen("http://localhost:8000/status", timeout=0.5) as req:
+                sdata = json.loads(req.read().decode("utf-8"))
+                vel = sdata.get("velocity", {})
+                lidar = sdata.get("lidar", {})
+                cur_vel = abs(vel.get("linear_x", 0.0))
+                cur_lidar = lidar.get("min_lidar_m", 999.0)
+                if cur_vel > max_linear_vel:
+                    max_linear_vel = cur_vel
+                if cur_vel > 0.05:
+                    sum_moving_vel += cur_vel
+                    moving_count += 1
+                if cur_lidar < min_lidar:
+                    min_lidar = cur_lidar
+        except Exception:
+            pass
+
         if feedback:
             cx = feedback.current_pose.pose.position.x
             cy = feedback.current_pose.pose.position.y
             dist_rem = feedback.distance_remaining
             recovers = feedback.number_of_recoveries
+            final_recoveries = max(final_recoveries, recovers)
             trajectory.append({
                 "time": round(elapsed, 2),
                 "x": round(cx, 3),
                 "y": round(cy, 3),
-                "dist_rem": round(dist_rem, 3)
+                "dist_rem": round(dist_rem, 3),
+                "vel": round(cur_vel, 3)
             })
 
             if step % 4 == 0 or dist_rem < 0.8:
                 label = f" [{step_label}]" if step_label else ""
-                print(f"  [{elapsed:5.1f}s]{label} Pose: ({cx:6.2f}, {cy:6.2f}) | Rem: {dist_rem:5.2f}m | Rec: {recovers}")
+                print(f"  [{elapsed:5.1f}s]{label} Pose: ({cx:6.2f}, {cy:6.2f}) | Vel: {cur_vel:4.2f}m/s | Rem: {dist_rem:5.2f}m | Rec: {recovers}")
 
         if elapsed > timeout:
             print(f"  [TIMEOUT] Exceeded {timeout}s — cancelling...")
             navigator.cancelTask()
             while not navigator.isTaskComplete():
                 time.sleep(0.1)
-            return False, elapsed, trajectory
+            metrics = {
+                "peak_vel": round(max_linear_vel, 3),
+                "avg_vel": round(sum_moving_vel / max(1, moving_count), 3),
+                "recoveries": final_recoveries,
+                "min_lidar": round(min_lidar, 3) if min_lidar < 900 else None
+            }
+            return False, elapsed, trajectory, metrics
 
-        time.sleep(0.5)
+        time.sleep(0.3)
 
     elapsed = time.time() - start_time
     result = navigator.getResult()
     success = (result == TaskResult.SUCCEEDED)
-    return success, elapsed, trajectory
+    metrics = {
+        "peak_vel": round(max_linear_vel, 3),
+        "avg_vel": round(sum_moving_vel / max(1, moving_count), 3),
+        "recoveries": final_recoveries,
+        "min_lidar": round(min_lidar, 3) if min_lidar < 900 else None
+    }
+    return success, elapsed, trajectory, metrics
 
 
 def get_settled_pose(timeout=4.0):
     """Queries http://localhost:8000/status for the settled robot pose once stopped."""
-    import urllib.request
     start = time.time()
     last_pose = None
     while time.time() - start < timeout:
@@ -234,7 +271,7 @@ def navigate_leg(navigator, leg):
         goal_pose = make_pose_stamped(navigator, gx, gy, gyaw)
         navigator.goToPose(goal_pose)
 
-    success, elapsed, trajectory = wait_for_completion(
+    success, elapsed, trajectory, metrics = wait_for_completion(
         navigator, timeout, leg["name"])
     all_trajectory.extend(trajectory)
 
@@ -251,6 +288,8 @@ def navigate_leg(navigator, leg):
     MAX_ALLOWED_ERROR_M = 0.35  # Strict check against Nav2 xy_goal_tolerance (0.35m)
     physical_arrival_ok = (pos_err is not None and pos_err <= MAX_ALLOWED_ERROR_M)
 
+    print(f"  Speed: Peak = {metrics['peak_vel']:.2f} m/s | Avg = {metrics['avg_vel']:.2f} m/s | Rec = {metrics['recoveries']} | Min LiDAR = {metrics['min_lidar']} m")
+
     if success and physical_arrival_ok:
         print(f"  RESULT: SUCCESS - Goal Reached in {total_elapsed:.1f}s!")
         print(f"  Final Settled Position: ({final_x:.3f}, {final_y:.3f}) | Error: {pos_err:.3f}m (tolerance: {MAX_ALLOWED_ERROR_M}m)")
@@ -260,6 +299,10 @@ def navigate_leg(navigator, leg):
             "elapsed": round(total_elapsed, 2),
             "final_pose": (round(final_x, 3), round(final_y, 3)),
             "error_m": round(pos_err, 3),
+            "peak_vel": metrics["peak_vel"],
+            "avg_vel": metrics["avg_vel"],
+            "recoveries": metrics["recoveries"],
+            "min_lidar": metrics["min_lidar"],
             "trajectory_points": len(all_trajectory),
             "trajectory": all_trajectory
         }
@@ -279,6 +322,10 @@ def navigate_leg(navigator, leg):
             "elapsed": round(total_elapsed, 2),
             "final_pose": (round(final_x, 3), round(final_y, 3)) if final_x is not None else None,
             "error_m": round(pos_err, 3) if pos_err is not None else None,
+            "peak_vel": metrics["peak_vel"],
+            "avg_vel": metrics["avg_vel"],
+            "recoveries": metrics["recoveries"],
+            "min_lidar": metrics["min_lidar"],
             "trajectory": all_trajectory
         }
 
@@ -341,7 +388,9 @@ def main():
         status = "PASSED [OK]" if r["result"]["success"] else "FAILED [X]"
         t = r["result"]["elapsed"]
         err = r["result"].get("error_m", "N/Am")
-        print(f" - {r['leg_name']:50s}: {status} (time: {t}s, err: {err}m)")
+        pv = r["result"].get("peak_vel", "N/A")
+        rec = r["result"].get("recoveries", 0)
+        print(f" - {r['leg_name']:46s}: {status} ({t}s | err: {err}m | peak: {pv}m/s | rec: {rec})")
     print("=" * 65)
 
     os.makedirs(os.path.dirname(os.path.abspath(args.report)), exist_ok=True)
