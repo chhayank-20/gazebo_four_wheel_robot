@@ -184,7 +184,7 @@ class RosAdapter:
             }
             self._last_scan_time = time.time()
 
-    def is_healthy(self) -> Dict[str, Any]:
+    def is_healthy(self, force: bool = False) -> Dict[str, Any]:
         """Reports live health status of ROS context, topics, and Nav2 action servers."""
         if not HAS_ROS2 or not self._is_running:
             return {
@@ -198,12 +198,10 @@ class RosAdapter:
 
         now = time.time()
         with self._lock:
-            if self._cached_health is not None and (now - self._cached_health_time) < 1.0:
+            if not force and self._cached_health is not None and (now - self._cached_health_time) < 0.25:
                 return dict(self._cached_health)
 
-        nav2_ready = False
-        if self.nav_through_client:
-            nav2_ready = self.nav_through_client.server_is_ready()
+        nav2_ready = self.is_nav2_ready()
 
         with self._lock:
             odom_fresh = (time.time() - self._last_odom_time) < self.freshness_timeout
@@ -227,15 +225,39 @@ class RosAdapter:
             self._cached_health_time = now
         return res
 
-    def get_health_status(self) -> Dict[str, Any]:
+    def get_health_status(self, force: bool = False) -> Dict[str, Any]:
         """Alias for is_healthy."""
-        return self.is_healthy()
+        return self.is_healthy(force=force)
 
     def is_nav2_ready(self) -> bool:
-        """Returns True if Nav2 action server is reachable."""
+        """Returns True if Nav2 action server is reachable and active."""
         if not HAS_ROS2 or not self._is_running:
             return False
-        return self.nav_through_client.server_is_ready() if self.nav_through_client else False
+        if not (self.nav_through_client and self.nav_through_client.server_is_ready()):
+            return False
+
+        # In Linux container environments, verify bt_navigator is not stopped or zombie
+        try:
+            import glob
+            for p in glob.glob('/proc/[0-9]*/cmdline'):
+                try:
+                    with open(p, 'rb') as f:
+                        cmd = f.read().decode('utf-8', errors='ignore')
+                        if 'bt_navigator' in cmd and 'python' not in cmd:
+                            pid = p.split('/')[2]
+                            with open(f'/proc/{pid}/status', 'r') as sf:
+                                for line in sf:
+                                    if line.startswith('State:'):
+                                        state = line.split()[1]
+                                        if state in ('T', 't', 'Z'):
+                                            return False
+                                        break
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        return True
 
     def is_busy(self) -> bool:
         """Returns True if a navigation goal is currently active."""
