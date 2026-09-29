@@ -1,0 +1,69 @@
+{
+  "latencies": {
+    "health_avg_ms": 6.74,
+    "health_min_ms": 3.09,
+    "health_max_ms": 14.0,
+    "status_avg_ms": 5.97,
+    "status_min_ms": 1.95,
+    "status_max_ms": 19.11
+  },
+  "freshness": {
+    "api_response_age_ms": -46.02,
+    "pose_timestamp": 77.0,
+    "velocity_timestamp": 77.1,
+    "lidar_timestamp": 77.1,
+    "all_feeds_present": true
+  },
+  "container_stats": {
+    "cpu_percent": "186.54%",
+    "mem_usage": "2.235GiB / 3.814GiB",
+    "mem_percent": "58.60%"
+  },
+  "gazebo_stats": {
+    "rtf": 0.8824100382965957
+  },
+  "top_processes": [
+    {
+      "pid": "249",
+      "cpu": "93.7%",
+      "mem": "23.3%",
+      "command": "gz sim -g --gui-config /workspace/gazebo_four_wheel_robot/co"
+    },
+    {
+      "pid": "38",
+      "cpu": "51.5%",
+      "mem": "26.2%",
+      "command": "gz sim -s -r worlds/robot_world.sdf"
+    },
+    {
+      "pid": "136",
+      "cpu": "6.2%",
+      "mem": "1.5%",
+      "command": "/opt/ros/jazzy/lib/nav2_bt_navigator/bt_navigator --ros-args"
+    },
+    {
+      "pid": "57",
+      "cpu": "5.4%",
+      "mem": "1.3%",
+      "command": "/opt/ros/jazzy/lib/ros_gz_bridge/parameter_bridge /cmd_vel@g"
+    },
+    {
+      "pid": "133",
+      "cpu": "5.4%",
+      "mem": "1.2%",
+      "command": "/opt/ros/jazzy/lib/nav2_controller/controller_server --ros-a"
+    },
+    {
+      "pid": "134",
+      "cpu": "5.4%",
+      "mem": "1.4%",
+      "command": "/opt/ros/jazzy/lib/nav2_planner/planner_server --ros-args -r"
+    },
+    {
+      "pid": "135",
+      "cpu": "4.8%",
+      "mem": "1.0%",
+      "command": "/opt/ros/jazzy/lib/nav2_behaviors/behavior_server --ros-args"
+    }
+  ]
+}
