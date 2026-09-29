@@ -159,10 +159,11 @@ def test_adaptive_offset_evaluation_boardroom(camera_controller):
 
 
 def test_adaptive_offset_evaluation_open_corridor(camera_controller):
-    """Test that candidate offset evaluation keeps preferred chase in open corridor."""
+    """Test that candidate offset evaluation keeps preferred elevated wide chase in open corridor."""
     # Robot in open West Corridor: rx = -25.0, ry = 7.25, ryaw = 3.1415
     name, offset = camera_controller.evaluate_best_offset(-25.0, 7.25, 3.1415)
-    assert name == "preferred_chase"
-    assert offset[0] == -2.2
-    assert offset[2] == 2.5
+    assert name == "elevated_wide_chase"
+    assert offset[0] == -1.2
+    assert offset[2] == 3.8
+
 

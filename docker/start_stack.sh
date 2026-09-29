@@ -94,7 +94,7 @@ GZ_GUI_PID=$!
     gz service -s /gui/follow --reqtype gz.msgs.StringMsg --reptype gz.msgs.Boolean --timeout 3000 \
         --req 'data: "four_wheel_robot"' >/dev/null 2>&1 || true
     gz service -s /gui/follow/offset --reqtype gz.msgs.Vector3d --reptype gz.msgs.Boolean --timeout 3000 \
-        --req 'x: -2.2, y: 0.0, z: 2.5' >/dev/null 2>&1 || true
+        --req 'x: -1.2, y: 0.0, z: 3.8' >/dev/null 2>&1 || true
 ) &
 
 # 10. Start Robot Control FastAPI Server

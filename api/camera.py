@@ -44,19 +44,18 @@ PRESET_POSES = {
 }
 
 # Ranked candidate camera follow offsets in robot local coordinates (dx, dy, dz)
-# Evaluated in priority order; first unobstructed offset is chosen
+# Evaluated in priority order; first unobstructed offset is chosen.
+# All presets maintain z >= 3.8m (comfortably above the 2.60m office wall top)
+# to keep the camera completely outside wall geometry and provide an unobstructed downward chase view.
 CANDIDATE_OFFSETS: List[Tuple[str, float, float, float]] = [
-    ("preferred_chase", -2.2, 0.0, 2.5),  # Standard elevated 3rd-person follow
-    ("medium_chase",    -1.6, 0.0, 2.8),  # Elevated corridor follow
-    ("close_chase",     -1.1, 0.0, 3.0),  # Tight space / room entry follow
-    ("steep_chase",     -0.6, 0.0, 3.4),  # Partition wall / doorway clearance
-    ("high_steep",      -0.3, 0.0, 3.8),  # Near vertical elevated view
-    ("overhead_follow",  0.0, 0.0, 4.0),  # Direct overhead follow (guaranteed clear)
-    ("lateral_right",   -1.2, -0.8, 2.8), # Lateral bypass right
-    ("lateral_left",    -1.2,  0.8, 2.8), # Lateral bypass left
+    ("elevated_wide_chase", -1.2,  0.0, 3.8),  # Primary elevated wide-angle follow (above 2.6m walls)
+    ("high_angle_chase",    -0.8,  0.0, 4.0),  # High-angle chase for tighter room clearances
+    ("overhead_follow",      0.0,  0.0, 4.2),  # Direct overhead follow
+    ("lateral_right",       -1.0, -0.6, 3.8),  # Lateral bypass right
+    ("lateral_left",        -1.0,  0.6, 3.8),  # Lateral bypass left
 ]
 
-DEFAULT_FOLLOW_OFFSET = [-2.2, 0.0, 2.5]
+DEFAULT_FOLLOW_OFFSET = [-1.2, 0.0, 3.8]
 
 
 class OfficeGeometry:
