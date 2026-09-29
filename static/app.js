@@ -132,9 +132,11 @@
     }
   }
 
-  closeToastBtn.addEventListener("click", () => {
-    errorToast.classList.add("hidden");
-  });
+  if (closeToastBtn) {
+    closeToastBtn.addEventListener("click", () => {
+      errorToast.classList.add("hidden");
+    });
+  }
 
   // --- Auto-resize Textarea ---
   messageInput.addEventListener("input", function () {
@@ -336,20 +338,24 @@
   });
 
   // Clear Chat History
-  clearChatBtn.addEventListener("click", () => {
-    // Keep initial welcome message
-    const initialWelcome = messagesContainer.firstElementChild;
-    messagesContainer.innerHTML = "";
-    if (initialWelcome) {
-      messagesContainer.appendChild(initialWelcome);
-    }
-  });
+  if (clearChatBtn) {
+    clearChatBtn.addEventListener("click", () => {
+      // Keep initial welcome message
+      const initialWelcome = messagesContainer.firstElementChild;
+      messagesContainer.innerHTML = "";
+      if (initialWelcome) {
+        messagesContainer.appendChild(initialWelcome);
+      }
+    });
+  }
 
   // Mobile Telemetry Toggle
-  toggleTelemetryBtn.addEventListener("click", () => {
-    telemetrySidebar.classList.toggle("active");
-    toggleTelemetryBtn.textContent = telemetrySidebar.classList.contains("active") ? "✕ Close" : "📊 Telemetry";
-  });
+  if (toggleTelemetryBtn && telemetrySidebar) {
+    toggleTelemetryBtn.addEventListener("click", () => {
+      telemetrySidebar.classList.toggle("active");
+      toggleTelemetryBtn.textContent = telemetrySidebar.classList.contains("active") ? "✕ Close" : "📊 Telemetry";
+    });
+  }
 
   // --- Telemetry & Health Polling ---
   async function fetchRobotHealth() {
@@ -551,34 +557,36 @@
   }
 
   // --- Cancellation Button Handler ---
-  cancelMissionBtn.addEventListener("click", async function () {
-    if (!activeCommandId) return;
+  if (cancelMissionBtn) {
+    cancelMissionBtn.addEventListener("click", async function () {
+      if (!activeCommandId) return;
 
-    cancelMissionBtn.disabled = true;
-    cancelMissionBtn.textContent = "⏳ Stopping Robot...";
+      cancelMissionBtn.disabled = true;
+      cancelMissionBtn.textContent = "⏳ Stopping Robot...";
 
-    try {
-      const res = await fetch(`${API_BASE}/commands/${activeCommandId}/cancel`, {
-        method: "POST",
-      });
-      const data = await res.json();
+      try {
+        const res = await fetch(`${API_BASE}/commands/${activeCommandId}/cancel`, {
+          method: "POST",
+        });
+        const data = await res.json();
 
-      if (res.ok && data.verified_stopped) {
-        showToast("Navigation stopped. Verified robot at full rest.", 4000);
-        appendAssistantMessage(
-          `🛑 **Navigation Canceled**: Command \`${activeCommandId}\` stopped successfully. Stationary rest verified.`,
-          null,
-          null
-        );
-      } else {
-        showToast("Cancellation notice: " + (data.detail || data.message || "Failed"), 5000);
+        if (res.ok && data.verified_stopped) {
+          showToast("Navigation stopped. Verified robot at full rest.", 4000);
+          appendAssistantMessage(
+            `🛑 **Navigation Canceled**: Command \`${activeCommandId}\` stopped successfully. Stationary rest verified.`,
+            null,
+            null
+          );
+        } else {
+          showToast("Cancellation notice: " + (data.detail || data.message || "Failed"), 5000);
+        }
+      } catch (err) {
+        showToast("Cancellation request error: " + err.message);
+      } finally {
+        fetchRobotStatus();
       }
-    } catch (err) {
-      showToast("Cancellation request error: " + err.message);
-    } finally {
-      fetchRobotStatus();
-    }
-  });
+    });
+  }
 
   // --- Approved Destinations List ---
   async function fetchApprovedLocations() {
