@@ -34,8 +34,8 @@ class CameraMode(str, Enum):
 # Camera pose presets for static views
 PRESET_POSES = {
     CameraMode.TOP_DOWN: {
-        "position": {"x": -20.0, "y": 5.0, "z": 32.0},
-        "orientation": {"x": 0.0, "y": 0.7071068, "z": 0.0, "w": 0.7071068},
+        "position": {"x": -11.0, "y": -0.6, "z": 55.0},
+        "orientation": {"x": -0.5, "y": 0.5, "z": 0.5, "w": 0.5},
     },
     CameraMode.RESET: {
         "position": {"x": -1.8, "y": -6.0, "z": 5.5},
