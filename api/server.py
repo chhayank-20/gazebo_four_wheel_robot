@@ -12,6 +12,7 @@ from fastapi.responses import HTMLResponse
 from starlette.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from api.camera import CameraController, camera_controller, get_camera_controller
 from api.command_manager import CommandManager, CommandStatus, NavigationCommand
 from api.destinations import DESTINATIONS, Destination, get_route_waypoints
 from api.llm_service import LLMService
@@ -24,6 +25,19 @@ STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file
 
 
 # Pydantic Schemas
+class CameraModeRequest(BaseModel):
+    mode: str = Field(..., description="Camera mode: 'follow', 'top_down', 'free', 'reset'")
+
+
+class CameraModeResponse(BaseModel):
+    current_mode: str
+    mode: str
+    available_modes: List[str]
+    descriptions: Dict[str, str] = {}
+    message: str
+    success: bool = True
+
+
 class ChatRequest(BaseModel):
     message: str = Field(..., description="Natural language user prompt")
     conversation_id: Optional[str] = Field(None, description="Optional conversation session ID")
@@ -116,11 +130,16 @@ def create_app(
     adapter: Optional[RosAdapter] = None,
     manager: Optional[CommandManager] = None,
     service: Optional[LLMService] = None,
+    camera: Optional[CameraController] = None,
+    ros_adapter: Optional[RosAdapter] = None,
+    command_manager: Optional[CommandManager] = None,
+    camera_controller: Optional[CameraController] = None,
 ) -> FastAPI:
     """Application factory allowing dependency injection for unit tests."""
-    ros_adapter = adapter or RosAdapter()
-    command_manager = manager or CommandManager()
+    ros_adapter = adapter or ros_adapter or RosAdapter()
+    command_manager = manager or command_manager or CommandManager()
     llm_service = service or LLMService(ros_adapter=ros_adapter, command_manager=command_manager)
+    camera_controller = camera or camera_controller or get_camera_controller()
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -195,6 +214,50 @@ def create_app(
             velocity=velocity,
             lidar=lidar,
             timestamp=time.time(),
+        )
+
+    @app.get("/camera/mode", response_model=CameraModeResponse)
+    def get_camera_mode():
+        """Returns current Gazebo camera viewing mode and available options."""
+        cur = camera_controller.get_current_mode()
+        descriptions = {
+            "follow": "Chase view closely tracking the robot",
+            "top_down": "High overhead view of the full office facility",
+            "free": "Unconstrained orbit and pan mode",
+            "reset": "Corridor & lobby overview framing robot starting location",
+        }
+        return CameraModeResponse(
+            current_mode=cur,
+            mode=cur,
+            available_modes=["follow", "top_down", "free", "reset"],
+            descriptions=descriptions,
+            message=f"Active camera mode: {cur}",
+            success=True,
+        )
+
+    @app.post("/camera/mode", response_model=CameraModeResponse)
+    async def set_camera_mode(req: CameraModeRequest):
+        """Changes the Gazebo camera viewing mode ('follow', 'top_down', 'free', 'reset')."""
+        success, message = await camera_controller.set_mode(req.mode)
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=message,
+            )
+        cur = camera_controller.get_current_mode()
+        descriptions = {
+            "follow": "Chase view closely tracking the robot",
+            "top_down": "High overhead view of the full office facility",
+            "free": "Unconstrained orbit and pan mode",
+            "reset": "Corridor & lobby overview framing robot starting location",
+        }
+        return CameraModeResponse(
+            current_mode=cur,
+            mode=cur,
+            available_modes=["follow", "top_down", "free", "reset"],
+            descriptions=descriptions,
+            message=message,
+            success=True,
         )
 
     @app.get("/locations", response_model=LocationsResponse)

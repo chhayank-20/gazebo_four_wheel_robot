@@ -3,38 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Autonomous Office Robot — Control & Chat UI</title>
+  <title>Autonomous Office Robot — Control, 3D Sim & Chat Dashboard</title>
   <link rel="stylesheet" href="/static/style.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>" />
 </head>
 <body>
   <div class="app-container">
-    <!-- Top Bar for Mobile & Quick Info -->
+    <!-- Top Bar Navigation -->
     <header class="top-nav">
       <div class="brand">
         <span class="brand-icon">🤖</span>
         <div class="brand-text">
           <h1>Office Robot Assistant</h1>
-          <span class="sub-title">Nav2 Autonomous Mobile Robot</span>
+          <span class="sub-title">Nav2 Autonomous Mobile Robot · Live 3D Simulation</span>
         </div>
       </div>
+
+      <!-- Mobile / Responsive View Tabs -->
+      <nav class="view-tabs mobile-only" role="tablist">
+        <button id="tab-sim" class="tab-btn active" role="tab" data-target="sim-section">📺 3D Sim</button>
+        <button id="tab-chat" class="tab-btn" role="tab" data-target="chat-section">💬 Chat</button>
+        <button id="tab-telemetry" class="tab-btn" role="tab" data-target="telemetry-sidebar">📊 Telemetry</button>
+      </nav>
+
       <div class="top-actions">
         <div id="connection-pill" class="pill pill-unknown">
           <span class="pulse-dot"></span>
           <span id="connection-text">Connecting...</span>
         </div>
-        <button id="toggle-telemetry-btn" class="btn btn-secondary mobile-only" aria-label="Toggle Telemetry Panel">
-          📊 Telemetry
-        </button>
-        <a href="http://localhost:8080/vnc.html?autoconnect=true&resize=remote" target="_blank" class="btn btn-secondary vnc-link" title="Open Gazebo 3D Simulation View">
-          📺 3D Sim
+        <a href="http://localhost:8080/vnc.html?autoconnect=true&resize=remote" target="_blank" class="btn btn-secondary vnc-popout-btn" title="Open Gazebo in Dedicated Tab">
+          ↗ External VNC
         </a>
       </div>
     </header>
 
-    <!-- Main Workspace -->
+    <!-- Main Multi-Pane Workspace -->
     <main class="main-layout">
-      <!-- Left Sidebar: Telemetry & Robot Controls -->
+      <!-- Left Pane: Telemetry & Controls Sidebar -->
       <aside id="telemetry-sidebar" class="sidebar">
         <!-- System Health Card -->
         <section class="card health-card">
@@ -177,19 +182,68 @@
           </div>
           <p class="section-help">Click to send a navigation request via chat:</p>
           <div class="locations-list" id="locations-list">
-            <!-- Dynamically populated -->
             <div class="location-item skeleton">Loading locations...</div>
           </div>
         </section>
       </aside>
 
-      <!-- Right/Main: Conversational Chat Interface -->
-      <section class="chat-section">
+      <!-- Center Pane: Large 3D Simulation Viewport & Camera Controls -->
+      <section id="sim-section" class="sim-section tab-active">
+        <div class="sim-card">
+          <!-- Viewport Header & Camera Controls Toolbar -->
+          <div class="sim-header">
+            <div class="sim-title-group">
+              <span class="sim-icon">🎥</span>
+              <div class="sim-titles">
+                <span class="sim-heading">Gazebo 3D Simulation</span>
+                <span id="cam-mode-badge" class="badge badge-primary">CAMERA: RESET</span>
+              </div>
+            </div>
+
+            <!-- Tested & Working Camera Mode Buttons -->
+            <div class="camera-toolbar" role="toolbar" aria-label="Gazebo Camera Modes">
+              <button class="cam-btn active" id="btn-cam-follow" data-mode="follow" title="Follow robot in chase perspective">
+                🏃 Follow Robot
+              </button>
+              <button class="cam-btn" id="btn-cam-topdown" data-mode="top_down" title="Top-down full facility bird's eye view">
+                🗺️ Top-Down
+              </button>
+              <button class="cam-btn" id="btn-cam-free" data-mode="free" title="Unlock camera for free 3D orbit and pan">
+                🌐 Free Orbit
+              </button>
+              <button class="cam-btn" id="btn-cam-reset" data-mode="reset" title="Reset camera to Lobby & corridor perspective">
+                🔄 Reset
+              </button>
+              <button class="cam-btn btn-expand" id="btn-fullscreen-sim" title="Toggle Fullscreen Viewport">
+                ⛶ Expand
+              </button>
+            </div>
+          </div>
+
+          <!-- Embedded Simulation Viewport Frame -->
+          <div class="sim-viewport-wrapper" id="sim-viewport-wrapper">
+            <iframe
+              id="sim-frame"
+              src="about:blank"
+              title="Gazebo 3D Simulation Viewport"
+              allow="fullscreen"
+              loading="lazy"
+            ></iframe>
+            <div id="sim-overlay" class="sim-overlay">
+              <div class="sim-spinner"></div>
+              <span>Connecting to Gazebo Harmonic 3D Stream...</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Pane: Conversational Chat Interface -->
+      <section id="chat-section" class="chat-section">
         <!-- Chat Header -->
         <div class="chat-header">
           <div class="chat-status-info">
             <span class="chat-title">Interactive Robot Chat</span>
-            <span class="chat-subtitle">Natural language commands with backend safety tool verification</span>
+            <span class="chat-subtitle">Autonomous navigation with tool verification</span>
           </div>
           <button id="clear-chat-btn" class="btn btn-sm btn-ghost" title="Clear conversation view">
             🧹 Clear

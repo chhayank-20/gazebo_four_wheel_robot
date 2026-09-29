@@ -83,6 +83,14 @@ echo "Launching Gazebo Sim GUI on virtual display..."
 gz sim -g &
 GZ_GUI_PID=$!
 
+# Initial camera framing for clean view of robot and Lobby (Milestone 4A Task 3)
+(
+    sleep 4
+    echo "Framing initial Gazebo camera (Lobby & corridor view)..."
+    gz service -s /gui/move_to/pose --reqtype gz.msgs.GUICamera --reptype gz.msgs.Boolean --timeout 3000 \
+        --req 'pose: {position: {x: -1.8, y: -6.0, z: 5.5}, orientation: {x: 0.2588, y: 0.0, z: 0.0, w: 0.9659}}' >/dev/null 2>&1 || true
+) &
+
 # 10. Start Robot Control FastAPI Server
 echo "Starting Robot Control API server on port 8000..."
 python3 -m uvicorn api.server:app --host 0.0.0.0 --port 8000 > /tmp/api_server.log 2>&1 &

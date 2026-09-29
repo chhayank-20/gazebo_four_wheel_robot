@@ -66,6 +66,15 @@
   const locationsList = document.getElementById("locations-list");
   const locationsCount = document.getElementById("locations-count");
 
+  // Simulation & Camera Elements
+  const simSection = document.getElementById("sim-section");
+  const simFrame = document.getElementById("sim-frame");
+  const simOverlay = document.getElementById("sim-overlay");
+  const camModeBadge = document.getElementById("cam-mode-badge");
+  const camButtons = document.querySelectorAll(".cam-btn[data-mode]");
+  const fullscreenSimBtn = document.getElementById("btn-fullscreen-sim");
+  const mobileTabBtns = document.querySelectorAll(".tab-btn[data-target]");
+
   // --- Initial Setup ---
   document.getElementById("initial-timestamp").textContent = formatTime(new Date());
 
@@ -556,11 +565,173 @@
     }
   }
 
+  // --- Gazebo 3D Simulation & noVNC Integration ---
+  function initSimulationViewport() {
+    if (!simFrame) return;
+
+    // Build the dynamic noVNC URL pointing to port 8080 on the current host
+    const host = window.location.hostname || "localhost";
+    const vncUrl = `${window.location.protocol}//${host}:8080/vnc.html?autoconnect=true&resize=scale&reconnect=true&reconnect_delay=1500`;
+
+    // Only set src if not already set or blank
+    if (!simFrame.src || simFrame.src === "about:blank" || simFrame.src.endsWith("about:blank")) {
+      simFrame.src = vncUrl;
+    }
+
+    // Hide loading overlay once iframe loads
+    simFrame.addEventListener("load", () => {
+      if (simOverlay) {
+        simOverlay.classList.add("hidden");
+      }
+    });
+
+    // Fallback: hide overlay after 2.5 seconds in case iframe load event is suppressed
+    setTimeout(() => {
+      if (simOverlay) {
+        simOverlay.classList.add("hidden");
+      }
+    }, 2500);
+
+    // Update external links dynamically
+    document.querySelectorAll(".vnc-popout-btn").forEach((btn) => {
+      btn.href = `http://${host}:8080/vnc.html?autoconnect=true&resize=remote`;
+    });
+  }
+
+  // --- Gazebo Camera Controls ---
+  const CAM_MODE_LABELS = {
+    follow: "FOLLOW (ROBOT)",
+    top_down: "TOP-DOWN",
+    free: "FREE (ORBIT)",
+    reset: "RESET",
+  };
+
+  function updateCameraUI(activeMode) {
+    if (camModeBadge) {
+      const label = CAM_MODE_LABELS[activeMode] || activeMode.toUpperCase();
+      camModeBadge.textContent = `CAMERA: ${label}`;
+    }
+
+    camButtons.forEach((btn) => {
+      if (btn.dataset.mode === activeMode) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+  }
+
+  async function setCameraMode(mode) {
+    updateCameraUI(mode);
+
+    try {
+      const res = await fetch(`${API_BASE}/camera/mode`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: mode }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.detail || `Camera control error (${res.status})`, 4000);
+        return;
+      }
+
+      if (data.current_mode) {
+        updateCameraUI(data.current_mode);
+      }
+    } catch (err) {
+      console.warn("Failed to set camera mode:", err);
+      showToast("Camera service unreachable: " + err.message, 4000);
+    }
+  }
+
+  async function fetchCameraMode() {
+    try {
+      const res = await fetch(`${API_BASE}/camera/mode`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.current_mode) {
+          updateCameraUI(data.current_mode);
+        }
+      }
+    } catch (err) {
+      // Quietly ignore camera mode polling errors
+    }
+  }
+
+  function setupCameraControls() {
+    camButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const mode = btn.dataset.mode;
+        if (mode) {
+          setCameraMode(mode);
+        }
+      });
+    });
+  }
+
+  // --- Fullscreen / Viewport Expand ---
+  function setupFullscreenToggle() {
+    if (!fullscreenSimBtn || !simSection) return;
+
+    fullscreenSimBtn.addEventListener("click", () => {
+      const isFull = simSection.classList.toggle("fullscreen-active");
+      if (isFull) {
+        fullscreenSimBtn.textContent = "↙ Collapse";
+        fullscreenSimBtn.title = "Collapse Simulation Viewport";
+      } else {
+        fullscreenSimBtn.textContent = "⛶ Expand";
+        fullscreenSimBtn.title = "Toggle Fullscreen Viewport";
+      }
+    });
+
+    // Allow Escape key to exit fullscreen
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && simSection.classList.contains("fullscreen-active")) {
+        simSection.classList.remove("fullscreen-active");
+        fullscreenSimBtn.textContent = "⛶ Expand";
+        fullscreenSimBtn.title = "Toggle Fullscreen Viewport";
+      }
+    });
+  }
+
+  // --- Mobile Tab Navigation ---
+  function setupMobileTabs() {
+    if (!mobileTabBtns || mobileTabBtns.length === 0) return;
+
+    mobileTabBtns.forEach((tabBtn) => {
+      tabBtn.addEventListener("click", () => {
+        const targetId = tabBtn.dataset.target;
+        if (!targetId) return;
+
+        // Switch active tab button
+        mobileTabBtns.forEach((b) => b.classList.remove("active"));
+        tabBtn.classList.add("active");
+
+        // Switch active content pane
+        const panes = document.querySelectorAll(".main-layout > aside, .main-layout > section");
+        panes.forEach((pane) => pane.classList.remove("tab-active"));
+
+        const targetPane = document.getElementById(targetId);
+        if (targetPane) {
+          targetPane.classList.add("tab-active");
+        }
+      });
+    });
+  }
+
   // --- Initialize Polling Loop ---
   function startPolling() {
+    initSimulationViewport();
+    setupCameraControls();
+    setupFullscreenToggle();
+    setupMobileTabs();
+
     fetchRobotHealth();
     fetchRobotStatus();
     fetchApprovedLocations();
+    fetchCameraMode();
 
     pollIntervalId = setInterval(() => {
       fetchRobotHealth();
@@ -570,3 +741,4 @@
 
   startPolling();
 })();
+

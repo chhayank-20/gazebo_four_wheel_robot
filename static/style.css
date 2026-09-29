@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Autonomous Office Robot — Modern Web Chat & Telemetry Stylesheet
+   Autonomous Office Robot — Dashboard, 3D Simulation & Chat Stylesheet
    ========================================================================== */
 
 :root {
@@ -73,7 +73,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 20px;
+  padding: 10px 20px;
   background-color: var(--bg-surface);
   border-bottom: 1px solid var(--border-color);
   z-index: 20;
@@ -90,14 +90,14 @@ body {
 }
 
 .brand-text h1 {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
 .sub-title {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-secondary);
 }
 
@@ -176,7 +176,7 @@ body {
   gap: 6px;
   padding: 6px 12px;
   border-radius: var(--radius-md);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 500;
   cursor: pointer;
   border: none;
@@ -222,43 +222,75 @@ body {
 .btn-sm { padding: 4px 8px; font-size: 0.75rem; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Main Layout */
+/* View Tabs for Responsive / Mobile Viewport */
+.view-tabs {
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 3px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.tab-btn {
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tab-btn.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ==========================================================================
+   Multi-Pane Workspace Layout
+   ========================================================================== */
 .main-layout {
   display: flex;
   flex: 1;
   overflow: hidden;
   position: relative;
+  width: 100%;
 }
 
-/* Sidebar: Telemetry & Controls */
+/* 1. Left Sidebar: Telemetry & Controls */
 .sidebar {
-  width: 380px;
-  min-width: 320px;
+  width: 310px;
+  min-width: 290px;
   background-color: var(--bg-surface);
   border-right: 1px solid var(--border-color);
   overflow-y: auto;
-  padding: 16px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  flex-shrink: 0;
 }
 
 .card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 14px;
+  padding: 12px;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .card-header h2 {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -267,15 +299,15 @@ body {
 .health-grid {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .health-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.8rem;
-  padding: 4px 6px;
+  font-size: 0.75rem;
+  padding: 3px 6px;
   border-radius: var(--radius-sm);
   background-color: rgba(255, 255, 255, 0.02);
 }
@@ -288,55 +320,55 @@ body {
 .h-status.stale { color: var(--warning); }
 
 /* Metrics */
-.metric-group { margin-bottom: 12px; }
+.metric-group { margin-bottom: 10px; }
 .metric-title {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
   text-transform: uppercase;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .metric-row {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .metric-box {
   flex: 1;
   background-color: rgba(0, 0, 0, 0.25);
   border-radius: var(--radius-md);
-  padding: 8px;
+  padding: 6px;
   text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .metric-box .m-label {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--text-muted);
 }
 .metric-box .m-val {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-primary);
   font-family: monospace;
 }
 .metric-box .m-unit {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: var(--text-secondary);
 }
 
 .metric-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* Clearance Bar */
 .clearance-box {
   background-color: rgba(0, 0, 0, 0.25);
   border-radius: var(--radius-md);
-  padding: 8px;
+  padding: 6px;
   border: 1px solid rgba(255, 255, 255, 0.04);
   text-align: center;
 }
@@ -348,17 +380,17 @@ body {
   gap: 4px;
 }
 .m-val-large {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 700;
   font-family: monospace;
 }
 
 .clearance-bar-track {
   width: 100%;
-  height: 6px;
+  height: 5px;
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
-  margin: 6px 0;
+  margin: 5px 0;
   overflow: hidden;
 }
 
@@ -369,7 +401,7 @@ body {
 }
 
 .clearance-status {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -400,9 +432,9 @@ body {
 .mission-details {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 0.8rem;
-  margin-bottom: 12px;
+  gap: 5px;
+  font-size: 0.78rem;
+  margin-bottom: 10px;
 }
 
 .mission-row {
@@ -419,17 +451,17 @@ body {
   padding: 2px 6px;
   border-radius: var(--radius-sm);
   font-family: monospace;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: #93c5fd;
 }
 
 .mission-progress-bar {
   width: 100%;
-  height: 6px;
+  height: 5px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
   overflow: hidden;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .progress-bar-fill {
@@ -446,16 +478,16 @@ body {
 
 /* Locations List */
 .section-help {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .locations-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-height: 220px;
+  gap: 5px;
+  max-height: 200px;
   overflow-y: auto;
 }
 
@@ -463,11 +495,11 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 10px;
+  padding: 6px 8px;
   background-color: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -478,38 +510,205 @@ body {
 }
 
 .location-item .loc-name { font-weight: 500; }
-.location-item .loc-id { font-size: 0.7rem; color: var(--text-muted); }
-.location-item .loc-action { font-size: 0.75rem; color: #60a5fa; }
+.location-item .loc-id { font-size: 0.68rem; color: var(--text-muted); }
+.location-item .loc-action { font-size: 0.72rem; color: #60a5fa; }
 
 /* ==========================================================================
-   Chat Section
+   2. Center Pane: 3D Simulation Viewport & Camera Controls
    ========================================================================== */
-.chat-section {
-  flex: 1;
+.sim-section {
+  flex: 1.25;
+  min-width: 440px;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 10px;
+  background-color: var(--bg-app);
+  overflow: hidden;
+}
+
+.sim-card {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--bg-app);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.sim-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sim-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sim-icon { font-size: 1.1rem; }
+
+.sim-titles {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sim-heading {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Camera Toolbar */
+.camera-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cam-btn {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  font-size: 0.76rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.cam-btn:hover {
+  background-color: var(--bg-card-hover);
+  color: var(--text-primary);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.cam-btn.active {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.cam-btn.btn-expand {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.cam-btn.btn-expand:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Viewport Wrapper */
+.sim-viewport-wrapper {
+  flex: 1;
+  position: relative;
+  background-color: #000;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+#sim-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.sim-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(11, 15, 25, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  z-index: 5;
+  transition: opacity 0.3s ease;
+}
+
+.sim-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sim-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(59, 130, 246, 0.2);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Fullscreen / Maximized Sim Viewport */
+.sim-section.fullscreen-active {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  padding: 0;
+  border-radius: 0;
+}
+.sim-section.fullscreen-active .sim-card {
+  border-radius: 0;
+  border: none;
+}
+
+/* ==========================================================================
+   3. Right Pane: Chat Section
+   ========================================================================== */
+.chat-section {
+  flex: 1;
+  min-width: 340px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--bg-surface);
+  border-left: 1px solid var(--border-color);
 }
 
 .chat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--border-color);
   background-color: rgba(17, 24, 39, 0.7);
   backdrop-filter: blur(8px);
 }
 
 .chat-title {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
   display: block;
 }
 
 .chat-subtitle {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
 }
 
@@ -517,16 +716,16 @@ body {
 .messages-container {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .message-wrapper {
   display: flex;
-  gap: 12px;
-  max-width: 85%;
+  gap: 10px;
+  max-width: 90%;
   animation: fadeIn 0.2s ease forwards;
 }
 
@@ -545,13 +744,13 @@ body {
 }
 
 .avatar {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   flex-shrink: 0;
@@ -565,12 +764,12 @@ body {
   background-color: var(--bubble-assistant);
   color: var(--bubble-assistant-text);
   border-radius: var(--radius-lg);
-  padding: 12px 16px;
+  padding: 10px 14px;
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   position: relative;
 }
 
@@ -590,7 +789,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: var(--text-muted);
 }
 
@@ -599,31 +798,31 @@ body {
 }
 
 .message-content {
-  font-size: 0.9rem;
-  line-height: 1.5;
+  font-size: 0.85rem;
+  line-height: 1.45;
   word-break: break-word;
 }
 
-.message-content p { margin-bottom: 6px; }
+.message-content p { margin-bottom: 5px; }
 .message-content p:last-child { margin-bottom: 0; }
-.message-content ul { margin-left: 20px; margin-bottom: 6px; }
-.message-content li { margin-bottom: 4px; }
+.message-content ul { margin-left: 18px; margin-bottom: 5px; }
+.message-content li { margin-bottom: 3px; }
 .message-content code {
   background: rgba(0, 0, 0, 0.3);
   padding: 1px 5px;
   border-radius: 4px;
   font-family: monospace;
-  font-size: 0.85em;
+  font-size: 0.82em;
 }
 
 /* Tool Execution Box inside Chat */
 .tool-call-box {
-  margin-top: 8px;
+  margin-top: 6px;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md);
-  padding: 8px 10px;
-  font-size: 0.75rem;
+  padding: 6px 8px;
+  font-size: 0.72rem;
 }
 
 .tool-call-header {
@@ -636,11 +835,11 @@ body {
 }
 
 .tool-details {
-  margin-top: 6px;
-  padding-top: 6px;
+  margin-top: 4px;
+  padding-top: 4px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   font-family: monospace;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: var(--text-secondary);
   white-space: pre-wrap;
   word-break: break-all;
@@ -650,9 +849,9 @@ body {
 .clarification-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-  padding-top: 8px;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 6px;
   border-top: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
@@ -660,9 +859,9 @@ body {
   background-color: rgba(59, 130, 246, 0.15);
   border: 1px solid rgba(59, 130, 246, 0.4);
   color: #93c5fd;
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: var(--radius-full);
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -670,24 +869,23 @@ body {
 .clarification-btn:hover {
   background-color: var(--primary);
   color: white;
-  transform: translateY(-1px);
 }
 
 /* Quick Prompt Chips */
 .quick-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 10px;
+  gap: 5px;
+  margin-top: 8px;
 }
 
 .chip {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-secondary);
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: var(--radius-full);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -702,13 +900,13 @@ body {
 .typing-indicator {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 20px;
+  gap: 8px;
+  padding: 6px 16px;
 }
 
 .typing-bubble {
   background-color: var(--bg-card);
-  padding: 8px 14px;
+  padding: 6px 12px;
   border-radius: var(--radius-lg);
   border-bottom-left-radius: 4px;
   display: inline-flex;
@@ -718,14 +916,14 @@ body {
 }
 
 .typing-text {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
   margin-left: 6px;
 }
 
 .dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   background-color: var(--text-secondary);
   border-radius: 50%;
   animation: bounce 1.4s infinite ease-in-out both;
@@ -742,21 +940,21 @@ body {
 /* Error Toast */
 .error-toast {
   position: absolute;
-  top: 70px;
+  top: 65px;
   left: 50%;
   transform: translateX(-50%);
   background-color: rgba(239, 68, 68, 0.95);
   backdrop-filter: blur(8px);
   color: white;
-  padding: 10px 16px;
+  padding: 8px 14px;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   z-index: 50;
   max-width: 90%;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   animation: slideDown 0.2s ease forwards;
 }
 
@@ -769,7 +967,7 @@ body {
   background: transparent;
   border: none;
   color: white;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   cursor: pointer;
   line-height: 1;
 }
@@ -777,8 +975,8 @@ body {
 /* Chat Input Bar */
 .chat-input-bar {
   display: flex;
-  gap: 10px;
-  padding: 14px 20px;
+  gap: 8px;
+  padding: 10px 14px;
   background-color: var(--bg-surface);
   border-top: 1px solid var(--border-color);
 }
@@ -794,11 +992,11 @@ body {
   color: var(--text-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 10px 14px;
-  font-size: 0.9rem;
+  padding: 8px 12px;
+  font-size: 0.85rem;
   font-family: inherit;
   resize: none;
-  max-height: 120px;
+  max-height: 100px;
   outline: none;
   transition: border-color 0.15s ease;
 }
@@ -814,11 +1012,11 @@ body {
 }
 
 .send-btn {
-  padding: 0 18px;
+  padding: 0 14px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 /* Utility Helpers */
@@ -826,31 +1024,64 @@ body {
 .skeleton { opacity: 0.5; font-style: italic; }
 .mobile-only { display: none; }
 
-/* Responsive Media Queries */
-@media (max-width: 900px) {
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
+@media (max-width: 1280px) {
   .sidebar {
-    width: 320px;
+    width: 270px;
+    min-width: 260px;
+  }
+  .sim-section {
+    min-width: 380px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .main-layout {
+    flex-wrap: wrap;
+  }
+  .sidebar {
+    width: 100%;
+    order: 3;
+    max-height: 250px;
+  }
+  .sim-section {
+    flex: 1;
+    min-width: 320px;
+    height: 50vh;
+  }
+  .chat-section {
+    flex: 1;
+    min-width: 320px;
+    height: 50vh;
   }
 }
 
 @media (max-width: 768px) {
-  .mobile-only { display: inline-flex; }
-  
-  .sidebar {
-    position: absolute;
-    top: 0;
-    left: 0;
+  .mobile-only { display: flex; }
+  .vnc-popout-btn { display: none; }
+
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .sidebar, .sim-section, .chat-section {
     width: 100%;
     height: 100%;
-    z-index: 30;
+    min-width: unset;
     display: none;
   }
-  
-  .sidebar.active {
+
+  .sidebar.tab-active,
+  .sim-section.tab-active,
+  .chat-section.tab-active {
     display: flex;
   }
-  
-  .message-wrapper {
-    max-width: 95%;
+
+  .camera-toolbar {
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 4px;
   }
 }
