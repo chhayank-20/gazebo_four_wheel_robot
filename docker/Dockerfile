@@ -33,6 +33,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     scrot \
     && rm -rf /var/lib/apt/lists/*
 
+# Install API dependencies (FastAPI, Uvicorn, HTTPX, Pytest)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-fastapi \
+    python3-uvicorn \
+    python3-httpx \
+    python3-pytest \
+    && rm -rf /var/lib/apt/lists/*
+
 # Link noVNC default index to vnc.html
 RUN ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html
 

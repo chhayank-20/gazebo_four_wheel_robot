@@ -18,6 +18,7 @@ bt_navigator:
       plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
     navigate_through_poses:
       plugin: "nav2_bt_navigator::NavigateThroughPosesNavigator"
+    default_nav_through_poses_bt_xml: "/workspace/gazebo_four_wheel_robot/config/navigate_through_poses_w_replanning_and_recovery.xml"
     error_code_names:
       - compute_path_error_code
       - follow_path_error_code

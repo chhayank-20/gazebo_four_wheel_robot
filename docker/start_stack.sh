@@ -3,6 +3,7 @@ set -e
 
 # Source ROS 2 environment
 source /opt/ros/jazzy/setup.bash
+export PYTHONPATH="${PYTHONPATH}:/workspace/gazebo_four_wheel_robot"
 
 echo "=========================================================="
 echo " Starting Full Containerized Robotics Stack"
@@ -66,7 +67,7 @@ ros2 run tf2_ros static_transform_publisher \
 STATIC_TF_PID=$!
 
 ros2 run tf2_ros static_transform_publisher \
-    --x -1.8 --y 0 --z 0 --roll 0 --pitch 0 --yaw 1.5708 \
+    --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 \
     --frame-id map --child-frame-id odom &
 MAP_TF_PID=$!
 sleep 1
@@ -82,15 +83,22 @@ echo "Launching Gazebo Sim GUI on virtual display..."
 gz sim -g &
 GZ_GUI_PID=$!
 
+# 10. Start Robot Control FastAPI Server
+echo "Starting Robot Control API server on port 8000..."
+python3 -m uvicorn api.server:app --host 0.0.0.0 --port 8000 > /tmp/api_server.log 2>&1 &
+API_PID=$!
+
 echo "=========================================================="
 echo " Stack is LIVE and ready!"
 echo " Web GUI available at: http://localhost:8080/vnc.html?autoconnect=true&resize=remote"
+echo " Robot Control API available at: http://localhost:8000"
 echo "=========================================================="
 
 # Cleanup handler
 cleanup() {
     echo ""
     echo "Stopping all processes..."
+    kill ${API_PID} 2>/dev/null || true
     kill ${GZ_GUI_PID} 2>/dev/null || true
     kill ${NAV2_PID} 2>/dev/null || true
     kill ${MAP_TF_PID} 2>/dev/null || true

@@ -72,11 +72,11 @@ DESTINATIONS = {
 # Corridor waypoints used to exit rooms before long traversals.
 # Each is a (x, y, yaw) tuple in map frame.
 CORRIDOR_STEP_SOUTH_OF_LIVING_DEMO = (-2.50, 7.40, -1.5708) # Straight south exit from Living Demo
-CORRIDOR_WEST_BELOW_LIVING_DEMO    = (-3.80, 7.40, 3.1415)  # Aligned west on corridor centerline
 CORRIDOR_CENTRE_BELOW_BOARD_ROOM   = (-23.00, 7.40, 1.5708) # Corridor center, south of Board Room door
 CORRIDOR_WEST_PASSAGE_ENTRY        = (-33.50, 7.25, -1.5708) # South corridor opening (X in [-35, -32])
 PROJECT_PASSAGEWAY_WEST            = (-33.50, 1.80, 3.1415)  # Westbound passage towards Accounts
-CORRIDOR_CENTRE_ABOVE_LOBBY        = (-1.80,  7.25, -1.5708) # Corridor center, right above Lobby opening
+CORRIDOR_CENTRE_ABOVE_LOBBY        = (-2.00,  7.25, -1.5708) # Corridor center, right above Lobby opening (balanced clearance)
+CORRIDOR_WEST_APPROACH_ACCOUNTS    = (-44.00, 1.50, 3.1415)  # Align heading directly west towards Accounts doorway
 
 # Tour leg definitions:
 TOUR_LEGS = [
@@ -93,7 +93,6 @@ TOUR_LEGS = [
         "timeout": 120.0,
         "waypoints": [
             CORRIDOR_STEP_SOUTH_OF_LIVING_DEMO,  # Exit straight south into corridor (Y=7.40)
-            CORRIDOR_WEST_BELOW_LIVING_DEMO,     # Pivot and align along corridor
             CORRIDOR_CENTRE_BELOW_BOARD_ROOM,    # Travel west along corridor centerline
         ],
         "final_dest": "board_room"
@@ -106,6 +105,7 @@ TOUR_LEGS = [
             CORRIDOR_CENTRE_BELOW_BOARD_ROOM,    # Exit Board Room south into corridor
             CORRIDOR_WEST_PASSAGE_ENTRY,         # Travel west along corridor to passage opening
             PROJECT_PASSAGEWAY_WEST,             # Turn south through passage into west aisle
+            CORRIDOR_WEST_APPROACH_ACCOUNTS,     # Align heading directly west towards Accounts doorway
         ],
         "final_dest": "accounts_ws"
     },

@@ -1,0 +1,122 @@
+[
+  {
+    "run": 1,
+    "status": "SUCCEEDED",
+    "elapsed_sec": 55.54,
+    "instant_finish_pose": {
+      "tf_x": -23.0,
+      "tf_y": 9.5,
+      "tf_yaw": 3.1415,
+      "goal_dist_m": 25.2982,
+      "yaw_error_deg": 0.0
+    },
+    "settled_pose": {
+      "tf_x": -23.0,
+      "tf_y": 9.5,
+      "tf_yaw": 3.1415,
+      "goal_dist_m": 25.2982,
+      "yaw_error_deg": 0.0
+    },
+    "gazebo_world_pose": {
+      "x": -46.6697,
+      "y": 1.4371,
+      "yaw": 3.0617,
+      "goal_dist_m": 0.3362
+    },
+    "disagreement_m": 25.0053,
+    "min_lidar_range_m": 0.272,
+    "min_scan_obstacle": {
+      "range": 0.272,
+      "beam_deg": -56.7,
+      "robot_pose": [
+        -23.0,
+        9.5,
+        3.14
+      ],
+      "obs_map_coord": [
+        -23.4,
+        9.73
+      ]
+    }
+  },
+  {
+    "run": 2,
+    "status": "SUCCEEDED",
+    "elapsed_sec": 55.92,
+    "instant_finish_pose": {
+      "tf_x": -23.0,
+      "tf_y": 9.5,
+      "tf_yaw": 3.1415,
+      "goal_dist_m": 25.2982,
+      "yaw_error_deg": 0.0
+    },
+    "settled_pose": {
+      "tf_x": -23.0,
+      "tf_y": 9.5,
+      "tf_yaw": 3.1415,
+      "goal_dist_m": 25.2982,
+      "yaw_error_deg": 0.0
+    },
+    "gazebo_world_pose": {
+      "x": -46.6948,
+      "y": 1.3443,
+      "yaw": 3.3167,
+      "goal_dist_m": 0.3426
+    },
+    "disagreement_m": 25.05912,
+    "min_lidar_range_m": 0.398,
+    "min_scan_obstacle": {
+      "range": 0.398,
+      "beam_deg": 91.8,
+      "robot_pose": [
+        -23.0,
+        9.5,
+        3.14
+      ],
+      "obs_map_coord": [
+        -23.24,
+        9.1
+      ]
+    }
+  },
+  {
+    "run": 3,
+    "status": "SUCCEEDED",
+    "elapsed_sec": 55.43,
+    "instant_finish_pose": {
+      "tf_x": -23.0,
+      "tf_y": 9.5,
+      "tf_yaw": 3.1415,
+      "goal_dist_m": 25.2982,
+      "yaw_error_deg": 0.0
+    },
+    "settled_pose": {
+      "tf_x": -23.0,
+      "tf_y": 9.5,
+      "tf_yaw": 3.1415,
+      "goal_dist_m": 25.2982,
+      "yaw_error_deg": 0.0
+    },
+    "gazebo_world_pose": {
+      "x": -46.6654,
+      "y": 1.4512,
+      "yaw": 3.0762,
+      "goal_dist_m": 0.3382
+    },
+    "disagreement_m": 24.99665,
+    "min_lidar_range_m": 0.266,
+    "min_scan_obstacle": {
+      "range": 0.266,
+      "beam_deg": -54.7,
+      "robot_pose": [
+        -23.0,
+        9.5,
+        3.14
+      ],
+      "obs_map_coord": [
+        -23.4,
+        9.72
+      ]
+    }
+  }
+]

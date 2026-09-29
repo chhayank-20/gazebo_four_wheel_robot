@@ -1,0 +1,298 @@
+{
+  "timestamp": "2026-09-28 19:40:06",
+  "tours_planned": 3,
+  "tours_executed": 3,
+  "tours": [
+    {
+      "tour": 1,
+      "legs": [
+        {
+          "tour_id": 1,
+          "name": "Leg 1: Lobby -> Living Demo",
+          "status": "SUCCEEDED",
+          "duration_sec": 16.39,
+          "physical_goal_dist_m": 0.2694,
+          "physical_yaw_error_deg": 17.4,
+          "pose_disagreement_m": 0.0539,
+          "recovery_count": 0,
+          "min_lidar_range_m": 0.644,
+          "wall_contact": false,
+          "anomalies": "NONE",
+          "final_gazebo_pose": {
+            "x": -2.3898,
+            "y": 10.2542,
+            "yaw": 1.8745
+          },
+          "final_nav2_pose": {
+            "x": -2.3782,
+            "y": 10.2015,
+            "yaw": 1.8581
+          }
+        },
+        {
+          "tour_id": 1,
+          "name": "Leg 2: Living Demo -> Board Room",
+          "status": "SUCCEEDED",
+          "duration_sec": 43.59,
+          "physical_goal_dist_m": 0.2825,
+          "physical_yaw_error_deg": 9.63,
+          "pose_disagreement_m": 0.0001,
+          "recovery_count": 0,
+          "min_lidar_range_m": 0.576,
+          "wall_contact": false,
+          "anomalies": "NONE",
+          "final_gazebo_pose": {
+            "x": -22.9167,
+            "y": 9.2301,
+            "yaw": 2.9735
+          },
+          "final_nav2_pose": {
+            "x": -22.9166,
+            "y": 9.2301,
+            "yaw": 2.8238
+          }
+        },
+        {
+          "tour_id": 1,
+          "name": "Leg 3: Board Room -> Accounts",
+          "status": "SUCCEEDED",
+          "duration_sec": 56.55,
+          "physical_goal_dist_m": 0.3506,
+          "physical_yaw_error_deg": 11.13,
+          "pose_disagreement_m": 0.0266,
+          "recovery_count": 0,
+          "min_lidar_range_m": 0.39,
+          "wall_contact": false,
+          "anomalies": "FLAGGED",
+          "final_gazebo_pose": {
+            "x": -46.6834,
+            "y": 1.3494,
+            "yaw": 3.3358
+          },
+          "final_nav2_pose": {
+            "x": -46.6603,
+            "y": 1.3625,
+            "yaw": 3.3755
+          }
+        },
+        {
+          "tour_id": 1,
+          "name": "Leg 4: Accounts -> Lobby",
+          "status": "SUCCEEDED",
+          "duration_sec": 102.41,
+          "physical_goal_dist_m": 0.2721,
+          "physical_yaw_error_deg": 9.36,
+          "pose_disagreement_m": 0.0001,
+          "recovery_count": 0,
+          "min_lidar_range_m": 0.304,
+          "wall_contact": false,
+          "anomalies": "NONE",
+          "final_gazebo_pose": {
+            "x": -1.8982,
+            "y": 0.2538,
+            "yaw": 1.4075
+          },
+          "final_nav2_pose": {
+            "x": -1.8982,
+            "y": 0.2537,
+            "yaw": 1.274
+          }
+        }
+      ]
+    },
+    {
+      "tour": 2,
+      "legs": [
+        {
+          "tour_id": 2,
+          "name": "Leg 1: Lobby -> Living Demo",
+          "status": "SUCCEEDED",
+          "duration_sec": 16.68,
+          "physical_goal_dist_m": 0.2756,
+          "physical_yaw_error_deg": 16.45,
+          "pose_disagreement_m": 0.0478,
+          "recovery_count": 0,
+          "min_lidar_range_m": 0.659,
+          "wall_contact": false,
+          "anomalies": "NONE",
+          "final_gazebo_pose": {
+            "x": -2.3936,
+            "y": 10.2457,
+            "yaw": 1.8579
+          },
+          "final_nav2_pose": {
+            "x": -2.3838,
+            "y": 10.199,
+            "yaw": 1.8443
+          }
+        },
+        {
+          "tour_id": 2,
+          "name": "Leg 2: Living Demo -> Board Room",
+          "status": "SUCCEEDED",
+          "duration_sec": 43.78,
+          "physical_goal_dist_m": 0.273,
+          "physical_yaw_error_deg": 13.98,
+          "pose_disagreement_m": 0.0001,
+          "recovery_count": 0,
+          "min_lidar_range_m": 0.564,
+          "wall_contact": false,
+          "anomalies": "NONE",
+          "final_gazebo_pose": {
+            "x": -22.9419,
+            "y": 9.2332,
+            "yaw": 2.8975
+          },
+          "final_nav2_pose": {
+            "x": -22.9418,
+            "y": 9.2333,
+            "yaw": 2.7507
+          }
+        },
+        {
+          "tour_id": 2,
+          "name": "Leg 3: Board Room -> Accounts",
+          "status": "SUCCEEDED",
+          "duration_sec": 54.4,
+          "physical_goal_dist_m": 0.3459,
+          "physical_yaw_error_deg": 11.34,
+          "pose_disagreement_m": 0.0264,
+          "recovery_count": 0,
+          "min_lidar_range_m": 0.39,
+          "wall_contact": false,
+          "anomalies": "NONE",
+          "final_gazebo_pose": {
+            "x": -46.6829,
+            "y": 1.3618,
+            "yaw": 3.3395
+          },
+          "final_nav2_pose": {
+            "x": -46.6589,
+            "y": 1.3729,
+            "yaw": 3.3747
+          }
+        },
+        {
+          "tour_id": 2,
+          "name": "Leg 4: Accounts -> Lobby",
+          "status": "SUCCEEDED",
+          "duration_sec": 95.19,
+          "physical_goal_dist_m": 0.2961,
+          "physical_yaw_error_deg": 12.39,
+          "pose_disagreement_m": 0.0001,
+          "recovery_count": 0,
+          "min_lidar_range_m": 0.312,
+          "wall_contact": false,
+          "anomalies": "NONE",
+          "final_gazebo_pose": {
+            "x": -1.9176,
+            "y": 0.2718,
+            "yaw": 1.3545
+          },
+          "final_nav2_pose": {
+            "x": -1.9176,
+            "y": 0.2717,
+            "yaw": 1.2473
+          }
+        }
+      ]
+    },
+    {
+      "tour": 3,
+      "legs": [
+        {
+          "tour_id": 3,
+          "name": "Leg 1: Lobby -> Living Demo",
+          "status": "SUCCEEDED",
+          "duration_sec": 16.66,
+          "physical_goal_dist_m": 0.2914,
+          "physical_yaw_error_deg": 15.23,
+          "pose_disagreement_m": 0.0513,
+          "recovery_count": 0,
+          "min_lidar_range_m": 0.671,
+          "wall_contact": false,
+          "anomalies": "NONE",
+          "final_gazebo_pose": {
+            "x": -2.3935,
+            "y": 10.2287,
+            "yaw": 1.8367
+          },
+          "final_nav2_pose": {
+            "x": -2.3844,
+            "y": 10.1783,
+            "yaw": 1.8247
+          }
+        },
+        {
+          "tour_id": 3,
+          "name": "Leg 2: Living Demo -> Board Room",
+          "status": "SUCCEEDED",
+          "duration_sec": 45.88,
+          "physical_goal_dist_m": 0.2823,
+          "physical_yaw_error_deg": 13.8,
+          "pose_disagreement_m": 0.0,
+          "recovery_count": 0,
+          "min_lidar_range_m": 0.615,
+          "wall_contact": false,
+          "anomalies": "NONE",
+          "final_gazebo_pose": {
+            "x": -22.9158,
+            "y": 9.2306,
+            "yaw": 2.9006
+          },
+          "final_nav2_pose": {
+            "x": -22.9158,
+            "y": 9.2306,
+            "yaw": 2.7635
+          }
+        },
+        {
+          "tour_id": 3,
+          "name": "Leg 3: Board Room -> Accounts",
+          "status": "SUCCEEDED",
+          "duration_sec": 56.16,
+          "physical_goal_dist_m": 0.3369,
+          "physical_yaw_error_deg": 3.83,
+          "pose_disagreement_m": 0.0057,
+          "recovery_count": 0,
+          "min_lidar_range_m": 0.259,
+          "wall_contact": false,
+          "anomalies": "NONE",
+          "final_gazebo_pose": {
+            "x": -46.6648,
+            "y": 1.4656,
+            "yaw": 3.0746
+          },
+          "final_nav2_pose": {
+            "x": -46.6613,
+            "y": 1.47,
+            "yaw": 3.0901
+          }
+        },
+        {
+          "tour_id": 3,
+          "name": "Leg 4: Accounts -> Lobby",
+          "status": "SUCCEEDED",
+          "duration_sec": 101.49,
+          "physical_goal_dist_m": 0.2958,
+          "physical_yaw_error_deg": 15.59,
+          "pose_disagreement_m": 0.0,
+          "recovery_count": 0,
+          "min_lidar_range_m": 0.205,
+          "wall_contact": false,
+          "anomalies": "NONE",
+          "final_gazebo_pose": {
+            "x": -1.906,
+            "y": 0.2762,
+            "yaw": 1.2987
+          },
+          "final_nav2_pose": {
+            "x": -1.906,
+            "y": 0.2761,
+            "yaw": 1.1792
+          }
+        }
+      ]
+    }
+  ]
+}

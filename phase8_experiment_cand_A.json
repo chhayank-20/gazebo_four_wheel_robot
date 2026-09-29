@@ -1,0 +1,152 @@
+[
+  {
+    "label": "Candidate_A_Run_1",
+    "elapsed_sec": 53.47,
+    "nav2_success": true,
+    "instant_at_completion": {
+      "x": -46.5594,
+      "y": 1.5123,
+      "yaw": 3.3233,
+      "dist_m": 0.4407,
+      "yaw_err_deg": 10.41,
+      "t_sim": 2156.85
+    },
+    "settled_at_rest": {
+      "gz_x": -46.6673,
+      "gz_y": 1.4421,
+      "gz_yaw": 3.0705,
+      "dist_m": 0.3377,
+      "yaw_err_deg": 4.07,
+      "t_sim": 2158.488
+    },
+    "clearance": {
+      "min_lidar_m": 0.278,
+      "safe_no_contact": true
+    },
+    "criteria": {
+      "criterion_A_action": true,
+      "criterion_B_physical_accuracy": true,
+      "criterion_C_collision": true
+    }
+  },
+  {
+    "label": "Candidate_A_Run_2",
+    "elapsed_sec": 51.94,
+    "nav2_success": true,
+    "instant_at_completion": {
+      "x": -46.6093,
+      "y": 1.5088,
+      "yaw": 3.273,
+      "dist_m": 0.3908,
+      "yaw_err_deg": 7.53,
+      "t_sim": 2202.15
+    },
+    "settled_at_rest": {
+      "gz_x": -46.6678,
+      "gz_y": 1.449,
+      "gz_yaw": 3.066,
+      "dist_m": 0.3361,
+      "yaw_err_deg": 4.33,
+      "t_sim": 2203.686
+    },
+    "clearance": {
+      "min_lidar_m": 0.266,
+      "safe_no_contact": true
+    },
+    "criteria": {
+      "criterion_A_action": true,
+      "criterion_B_physical_accuracy": true,
+      "criterion_C_collision": true
+    }
+  },
+  {
+    "label": "Candidate_A_Run_3",
+    "elapsed_sec": 53.3,
+    "nav2_success": true,
+    "instant_at_completion": {
+      "x": -46.5564,
+      "y": 1.4963,
+      "yaw": 3.3206,
+      "dist_m": 0.4436,
+      "yaw_err_deg": 10.26,
+      "t_sim": 2247.7
+    },
+    "settled_at_rest": {
+      "gz_x": -46.6708,
+      "gz_y": 1.4288,
+      "gz_yaw": 3.0597,
+      "dist_m": 0.3368,
+      "yaw_err_deg": 4.69,
+      "t_sim": 2249.207
+    },
+    "clearance": {
+      "min_lidar_m": 0.282,
+      "safe_no_contact": true
+    },
+    "criteria": {
+      "criterion_A_action": true,
+      "criterion_B_physical_accuracy": true,
+      "criterion_C_collision": true
+    }
+  },
+  {
+    "label": "Candidate_A_Run_4",
+    "elapsed_sec": 52.94,
+    "nav2_success": true,
+    "instant_at_completion": {
+      "x": -46.5357,
+      "y": 1.5031,
+      "yaw": 3.3475,
+      "dist_m": 0.4643,
+      "yaw_err_deg": 11.81,
+      "t_sim": 2293.4
+    },
+    "settled_at_rest": {
+      "gz_x": -46.677,
+      "gz_y": 1.4238,
+      "gz_yaw": 3.0359,
+      "dist_m": 0.3319,
+      "yaw_err_deg": 6.05,
+      "t_sim": 2294.972
+    },
+    "clearance": {
+      "min_lidar_m": 0.291,
+      "safe_no_contact": true
+    },
+    "criteria": {
+      "criterion_A_action": true,
+      "criterion_B_physical_accuracy": true,
+      "criterion_C_collision": true
+    }
+  },
+  {
+    "label": "Candidate_A_Run_5",
+    "elapsed_sec": 52.23,
+    "nav2_success": true,
+    "instant_at_completion": {
+      "x": -46.5216,
+      "y": 1.491,
+      "yaw": 3.3211,
+      "dist_m": 0.4785,
+      "yaw_err_deg": 10.29,
+      "t_sim": 2338.85
+    },
+    "settled_at_rest": {
+      "gz_x": -46.6715,
+      "gz_y": 1.4194,
+      "gz_yaw": 3.0601,
+      "dist_m": 0.3383,
+      "yaw_err_deg": 4.66,
+      "t_sim": 2340.308
+    },
+    "clearance": {
+      "min_lidar_m": 0.291,
+      "safe_no_contact": true
+    },
+    "criteria": {
+      "criterion_A_action": true,
+      "criterion_B_physical_accuracy": true,
+      "criterion_C_collision": true
+    }
+  }
+]

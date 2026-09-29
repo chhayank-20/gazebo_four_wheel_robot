@@ -1,0 +1,584 @@
+[
+  {
+    "run": 1,
+    "elapsed_sec": 58.36,
+    "nav2_action_result": "TaskResult.SUCCEEDED",
+    "timestamps": {
+      "t_result_wall": 1790608337.866,
+      "t_result_sim": 1207.25,
+      "tf_stamp_instant": 1162.9,
+      "odom_stamp_instant": 1207.25,
+      "tf_stamp_settled": 1162.9,
+      "odom_stamp_settled": 1207.25,
+      "gz_stamp_settled": 1208.791
+    },
+    "instant_result_pose": {
+      "x": -46.502,
+      "y": 1.4559,
+      "yaw": 3.5729,
+      "dist_to_goal_m": 0.4999,
+      "yaw_err_deg": 24.72
+    },
+    "settled_final_pose": {
+      "odom_x": -46.502,
+      "odom_y": 1.4559,
+      "odom_yaw": 3.5729,
+      "gz_x": -46.6876,
+      "gz_y": 1.3477,
+      "gz_yaw": 3.3244,
+      "dist_to_goal_m": 0.4999,
+      "yaw_err_deg": 24.72,
+      "post_latch_drift_m": 0.0,
+      "tf_gz_disagreement_m": 25.05123
+    },
+    "clearance": {
+      "min_lidar_m": 0.403,
+      "wall_contact": false
+    },
+    "acceptance_criteria": {
+      "criterion_A_nav2_action_success": true,
+      "criterion_B_physical_accuracy": false,
+      "criterion_C_collision_safety": true
+    },
+    "approach_trajectory_tail": [
+      {
+        "sim_time": 1206.1,
+        "x": -45.7245,
+        "y": 2.0175,
+        "yaw": 3.7791,
+        "dist_rem": 1.3765,
+        "yaw_err_deg": 36.53,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.045
+      },
+      {
+        "sim_time": 1206.2,
+        "x": -45.7926,
+        "y": 1.9666,
+        "yaw": 3.7759,
+        "dist_rem": 1.2944,
+        "yaw_err_deg": 36.35,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.045
+      },
+      {
+        "sim_time": 1206.3,
+        "x": -45.8607,
+        "y": 1.9158,
+        "yaw": 3.7731,
+        "dist_rem": 1.2128,
+        "yaw_err_deg": 36.19,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.045
+      },
+      {
+        "sim_time": 1206.35,
+        "x": -45.8949,
+        "y": 1.8904,
+        "yaw": 3.7718,
+        "dist_rem": 1.1721,
+        "yaw_err_deg": 36.11,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.045
+      },
+      {
+        "sim_time": 1206.45,
+        "x": -45.9632,
+        "y": 1.84,
+        "yaw": 3.7695,
+        "dist_rem": 1.0911,
+        "yaw_err_deg": 35.98,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.045
+      },
+      {
+        "sim_time": 1206.5,
+        "x": -45.9975,
+        "y": 1.8148,
+        "yaw": 3.7686,
+        "dist_rem": 1.0508,
+        "yaw_err_deg": 35.93,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.032
+      },
+      {
+        "sim_time": 1206.6,
+        "x": -46.0661,
+        "y": 1.7646,
+        "yaw": 3.7672,
+        "dist_rem": 0.9707,
+        "yaw_err_deg": 35.85,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.032
+      },
+      {
+        "sim_time": 1206.7,
+        "x": -46.1347,
+        "y": 1.7145,
+        "yaw": 3.7666,
+        "dist_rem": 0.8915,
+        "yaw_err_deg": 35.82,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.032
+      },
+      {
+        "sim_time": 1206.75,
+        "x": -46.1691,
+        "y": 1.6895,
+        "yaw": 3.7664,
+        "dist_rem": 0.8522,
+        "yaw_err_deg": 35.81,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.032
+      },
+      {
+        "sim_time": 1206.85,
+        "x": -46.2379,
+        "y": 1.6396,
+        "yaw": 3.7635,
+        "dist_rem": 0.7748,
+        "yaw_err_deg": 35.64,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.032
+      },
+      {
+        "sim_time": 1206.9,
+        "x": -46.2723,
+        "y": 1.6146,
+        "yaw": 3.7593,
+        "dist_rem": 0.7366,
+        "yaw_err_deg": 35.4,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.009
+      },
+      {
+        "sim_time": 1207.0,
+        "x": -46.3413,
+        "y": 1.565,
+        "yaw": 3.7269,
+        "dist_rem": 0.6619,
+        "yaw_err_deg": 33.54,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.009
+      },
+      {
+        "sim_time": 1207.05,
+        "x": -46.376,
+        "y": 1.5404,
+        "yaw": 3.6986,
+        "dist_rem": 0.6253,
+        "yaw_err_deg": 31.92,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.009
+      },
+      {
+        "sim_time": 1207.15,
+        "x": -46.4444,
+        "y": 1.4937,
+        "yaw": 3.6333,
+        "dist_rem": 0.5556,
+        "yaw_err_deg": 28.18,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.009
+      },
+      {
+        "sim_time": 1207.25,
+        "x": -46.502,
+        "y": 1.4559,
+        "yaw": 3.5729,
+        "dist_rem": 0.4999,
+        "yaw_err_deg": 24.72,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.009
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "elapsed_sec": 57.2,
+    "nav2_action_result": "TaskResult.SUCCEEDED",
+    "timestamps": {
+      "t_result_wall": 1790608398.8103,
+      "t_result_sim": 1253.45,
+      "tf_stamp_instant": 1162.9,
+      "odom_stamp_instant": 1253.45,
+      "tf_stamp_settled": 1162.9,
+      "odom_stamp_settled": 1253.45,
+      "gz_stamp_settled": 1255.002
+    },
+    "instant_result_pose": {
+      "x": -46.5068,
+      "y": 1.4541,
+      "yaw": 3.5613,
+      "dist_to_goal_m": 0.4953,
+      "yaw_err_deg": 24.05
+    },
+    "settled_final_pose": {
+      "odom_x": -46.5068,
+      "odom_y": 1.4541,
+      "odom_yaw": 3.5613,
+      "gz_x": -46.6943,
+      "gz_y": 1.3472,
+      "gz_yaw": 3.3132,
+      "dist_to_goal_m": 0.4953,
+      "yaw_err_deg": 24.05,
+      "post_latch_drift_m": 0.0,
+      "tf_gz_disagreement_m": 25.05769
+    },
+    "clearance": {
+      "min_lidar_m": 0.405,
+      "wall_contact": false
+    },
+    "acceptance_criteria": {
+      "criterion_A_nav2_action_success": true,
+      "criterion_B_physical_accuracy": false,
+      "criterion_C_collision_safety": true
+    },
+    "approach_trajectory_tail": [
+      {
+        "sim_time": 1252.3,
+        "x": -45.7259,
+        "y": 2.0158,
+        "yaw": 3.7788,
+        "dist_rem": 1.3746,
+        "yaw_err_deg": 36.52,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.025
+      },
+      {
+        "sim_time": 1252.35,
+        "x": -45.7599,
+        "y": 1.9903,
+        "yaw": 3.7771,
+        "dist_rem": 1.3335,
+        "yaw_err_deg": 36.42,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.025
+      },
+      {
+        "sim_time": 1252.45,
+        "x": -45.8279,
+        "y": 1.9394,
+        "yaw": 3.774,
+        "dist_rem": 1.2517,
+        "yaw_err_deg": 36.24,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.025
+      },
+      {
+        "sim_time": 1252.55,
+        "x": -45.8962,
+        "y": 1.8887,
+        "yaw": 3.7713,
+        "dist_rem": 1.1703,
+        "yaw_err_deg": 36.09,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.025
+      },
+      {
+        "sim_time": 1252.65,
+        "x": -45.9646,
+        "y": 1.8382,
+        "yaw": 3.769,
+        "dist_rem": 1.0893,
+        "yaw_err_deg": 35.96,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.035
+      },
+      {
+        "sim_time": 1252.7,
+        "x": -45.9988,
+        "y": 1.813,
+        "yaw": 3.7681,
+        "dist_rem": 1.049,
+        "yaw_err_deg": 35.9,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.035
+      },
+      {
+        "sim_time": 1252.8,
+        "x": -46.0674,
+        "y": 1.7628,
+        "yaw": 3.7667,
+        "dist_rem": 0.9689,
+        "yaw_err_deg": 35.82,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.035
+      },
+      {
+        "sim_time": 1252.9,
+        "x": -46.1361,
+        "y": 1.7128,
+        "yaw": 3.7658,
+        "dist_rem": 0.8897,
+        "yaw_err_deg": 35.77,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.035
+      },
+      {
+        "sim_time": 1252.95,
+        "x": -46.1705,
+        "y": 1.6878,
+        "yaw": 3.7653,
+        "dist_rem": 0.8505,
+        "yaw_err_deg": 35.74,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.035
+      },
+      {
+        "sim_time": 1253.05,
+        "x": -46.2393,
+        "y": 1.6379,
+        "yaw": 3.7604,
+        "dist_rem": 0.7731,
+        "yaw_err_deg": 35.46,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.035
+      },
+      {
+        "sim_time": 1253.1,
+        "x": -46.2738,
+        "y": 1.613,
+        "yaw": 3.7534,
+        "dist_rem": 0.735,
+        "yaw_err_deg": 35.06,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.009
+      },
+      {
+        "sim_time": 1253.2,
+        "x": -46.3429,
+        "y": 1.5636,
+        "yaw": 3.7147,
+        "dist_rem": 0.6602,
+        "yaw_err_deg": 32.84,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.009
+      },
+      {
+        "sim_time": 1253.25,
+        "x": -46.3777,
+        "y": 1.5392,
+        "yaw": 3.6859,
+        "dist_rem": 0.6235,
+        "yaw_err_deg": 31.19,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.009
+      },
+      {
+        "sim_time": 1253.35,
+        "x": -46.4476,
+        "y": 1.4922,
+        "yaw": 3.6208,
+        "dist_rem": 0.5525,
+        "yaw_err_deg": 27.46,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.009
+      },
+      {
+        "sim_time": 1253.45,
+        "x": -46.5068,
+        "y": 1.4541,
+        "yaw": 3.5613,
+        "dist_rem": 0.4953,
+        "yaw_err_deg": 24.05,
+        "cmd_lin": 0.85,
+        "cmd_ang": -0.009
+      }
+    ]
+  },
+  {
+    "run": 3,
+    "elapsed_sec": 55.32,
+    "nav2_action_result": "TaskResult.SUCCEEDED",
+    "timestamps": {
+      "t_result_wall": 1790608457.7317,
+      "t_result_sim": 1297.9,
+      "tf_stamp_instant": 1162.9,
+      "odom_stamp_instant": 1297.9,
+      "tf_stamp_settled": 1162.9,
+      "odom_stamp_settled": 1297.9,
+      "gz_stamp_settled": 1299.431
+    },
+    "instant_result_pose": {
+      "x": -46.6063,
+      "y": 1.5291,
+      "yaw": 3.2834,
+      "dist_to_goal_m": 0.3948,
+      "yaw_err_deg": 8.13
+    },
+    "settled_final_pose": {
+      "odom_x": -46.6063,
+      "odom_y": 1.5291,
+      "odom_yaw": 3.2834,
+      "gz_x": -46.6672,
+      "gz_y": 1.4511,
+      "gz_yaw": 3.0682,
+      "dist_to_goal_m": 0.3948,
+      "yaw_err_deg": 8.13,
+      "post_latch_drift_m": 0.0,
+      "tf_gz_disagreement_m": 24.9984
+    },
+    "clearance": {
+      "min_lidar_m": 0.265,
+      "wall_contact": false
+    },
+    "acceptance_criteria": {
+      "criterion_A_nav2_action_success": true,
+      "criterion_B_physical_accuracy": false,
+      "criterion_C_collision_safety": true
+    },
+    "approach_trajectory_tail": [
+      {
+        "sim_time": 1296.8,
+        "x": -45.8743,
+        "y": 1.5012,
+        "yaw": 2.9318,
+        "dist_rem": 1.1257,
+        "yaw_err_deg": 12.02,
+        "cmd_lin": 0.85,
+        "cmd_ang": 0.756
+      },
+      {
+        "sim_time": 1296.9,
+        "x": -45.9378,
+        "y": 1.5233,
+        "yaw": 2.9926,
+        "dist_rem": 1.0625,
+        "yaw_err_deg": 8.53,
+        "cmd_lin": 0.85,
+        "cmd_ang": 0.756
+      },
+      {
+        "sim_time": 1296.95,
+        "x": -45.9758,
+        "y": 1.5338,
+        "yaw": 3.0292,
+        "dist_rem": 1.0248,
+        "yaw_err_deg": 6.43,
+        "cmd_lin": 0.85,
+        "cmd_ang": 0.756
+      },
+      {
+        "sim_time": 1297.05,
+        "x": -46.0537,
+        "y": 1.5517,
+        "yaw": 3.1006,
+        "dist_rem": 0.9477,
+        "yaw_err_deg": 2.34,
+        "cmd_lin": 0.85,
+        "cmd_ang": 0.756
+      },
+      {
+        "sim_time": 1297.15,
+        "x": -46.1212,
+        "y": 1.5643,
+        "yaw": 3.1608,
+        "dist_rem": 0.8812,
+        "yaw_err_deg": 1.11,
+        "cmd_lin": 0.85,
+        "cmd_ang": 0.906
+      },
+      {
+        "sim_time": 1297.2,
+        "x": -46.1572,
+        "y": 1.5688,
+        "yaw": 3.1935,
+        "dist_rem": 0.8456,
+        "yaw_err_deg": 2.98,
+        "cmd_lin": 0.85,
+        "cmd_ang": 0.906
+      },
+      {
+        "sim_time": 1297.3,
+        "x": -46.239,
+        "y": 1.5738,
+        "yaw": 3.2608,
+        "dist_rem": 0.7646,
+        "yaw_err_deg": 6.84,
+        "cmd_lin": 0.85,
+        "cmd_ang": 0.906
+      },
+      {
+        "sim_time": 1297.4,
+        "x": -46.3239,
+        "y": 1.5735,
+        "yaw": 3.3086,
+        "dist_rem": 0.68,
+        "yaw_err_deg": 9.57,
+        "cmd_lin": 0.85,
+        "cmd_ang": 0.906
+      },
+      {
+        "sim_time": 1297.45,
+        "x": -46.3666,
+        "y": 1.5716,
+        "yaw": 3.322,
+        "dist_rem": 0.6374,
+        "yaw_err_deg": 10.34,
+        "cmd_lin": 0.85,
+        "cmd_ang": 0.906
+      },
+      {
+        "sim_time": 1297.55,
+        "x": -46.4511,
+        "y": 1.5648,
+        "yaw": 3.3419,
+        "dist_rem": 0.5527,
+        "yaw_err_deg": 11.48,
+        "cmd_lin": 0.85,
+        "cmd_ang": 0.906
+      },
+      {
+        "sim_time": 1297.6,
+        "x": -46.4893,
+        "y": 1.5609,
+        "yaw": 3.3504,
+        "dist_rem": 0.5143,
+        "yaw_err_deg": 11.97,
+        "cmd_lin": 0.85,
+        "cmd_ang": 0.229
+      },
+      {
+        "sim_time": 1297.65,
+        "x": -46.5232,
+        "y": 1.5572,
+        "yaw": 3.3588,
+        "dist_rem": 0.4802,
+        "yaw_err_deg": 12.45,
+        "cmd_lin": 0.85,
+        "cmd_ang": 0.229
+      },
+      {
+        "sim_time": 1297.75,
+        "x": -46.5829,
+        "y": 1.5494,
+        "yaw": 3.3744,
+        "dist_rem": 0.42,
+        "yaw_err_deg": 13.34,
+        "cmd_lin": 0.85,
+        "cmd_ang": 0.229
+      },
+      {
+        "sim_time": 1297.85,
+        "x": -46.5987,
+        "y": 1.537,
+        "yaw": 3.3112,
+        "dist_rem": 0.403,
+        "yaw_err_deg": 9.72,
+        "cmd_lin": 0.85,
+        "cmd_ang": 0.229
+      },
+      {
+        "sim_time": 1297.9,
+        "x": -46.6063,
+        "y": 1.5291,
+        "yaw": 3.2834,
+        "dist_rem": 0.3948,
+        "yaw_err_deg": 8.13,
+        "cmd_lin": 0.533,
+        "cmd_ang": 0.215
+      }
+    ]
+  }
+]

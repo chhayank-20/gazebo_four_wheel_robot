@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Autonomous Office Robot — Control & Chat UI</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Bar for Mobile & Quick Info -->
+    <header class="top-nav">
+      <div class="brand">
+        <span class="brand-icon">🤖</span>
+        <div class="brand-text">
+          <h1>Office Robot Assistant</h1>
+          <span class="sub-title">Nav2 Autonomous Mobile Robot</span>
+        </div>
+      </div>
+      <div class="top-actions">
+        <div id="connection-pill" class="pill pill-unknown">
+          <span class="pulse-dot"></span>
+          <span id="connection-text">Connecting...</span>
+        </div>
+        <button id="toggle-telemetry-btn" class="btn btn-secondary mobile-only" aria-label="Toggle Telemetry Panel">
+          📊 Telemetry
+        </button>
+        <a href="http://localhost:8080/vnc.html?autoconnect=true&resize=remote" target="_blank" class="btn btn-secondary vnc-link" title="Open Gazebo 3D Simulation View">
+          📺 3D Sim
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="main-layout">
+      <!-- Left Sidebar: Telemetry & Robot Controls -->
+      <aside id="telemetry-sidebar" class="sidebar">
+        <!-- System Health Card -->
+        <section class="card health-card">
+          <div class="card-header">
+            <h2>System Health</h2>
+            <span id="health-badge" class="badge badge-unknown">CHECKING</span>
+          </div>
+          <div class="health-grid">
+            <div class="health-item" id="h-ros">
+              <span class="h-icon">⚡</span>
+              <span class="h-label">ROS 2 Context</span>
+              <span class="h-status" id="h-ros-val">--</span>
+            </div>
+            <div class="health-item" id="h-nav">
+              <span class="h-icon">🧭</span>
+              <span class="h-label">Nav2 Action Server</span>
+              <span class="h-status" id="h-nav-val">--</span>
+            </div>
+            <div class="health-item" id="h-odom">
+              <span class="h-icon">🔄</span>
+              <span class="h-label">Odometry Feed</span>
+              <span class="h-status" id="h-odom-val">--</span>
+            </div>
+            <div class="health-item" id="h-scan">
+              <span class="h-icon">📡</span>
+              <span class="h-label">LiDAR Scan</span>
+              <span class="h-status" id="h-scan-val">--</span>
+            </div>
+            <div class="health-item" id="h-tf">
+              <span class="h-icon">📐</span>
+              <span class="h-label">TF Transform</span>
+              <span class="h-status" id="h-tf-val">--</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Live Telemetry Card -->
+        <section class="card telemetry-card">
+          <div class="card-header">
+            <h2>Live Telemetry</h2>
+            <span id="telemetry-freshness" class="text-muted">Updated: --</span>
+          </div>
+
+          <!-- Pose -->
+          <div class="metric-group">
+            <div class="metric-title">Map Pose (X, Y, Heading)</div>
+            <div class="metric-row">
+              <div class="metric-box">
+                <span class="m-label">X</span>
+                <span class="m-val" id="pose-x">--</span>
+                <span class="m-unit">m</span>
+              </div>
+              <div class="metric-box">
+                <span class="m-label">Y</span>
+                <span class="m-val" id="pose-y">--</span>
+                <span class="m-unit">m</span>
+              </div>
+              <div class="metric-box">
+                <span class="m-label">Yaw</span>
+                <span class="m-val" id="pose-yaw">--</span>
+                <span class="m-unit">deg</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Velocity & LiDAR -->
+          <div class="metric-split">
+            <div class="metric-group">
+              <div class="metric-title">Velocity</div>
+              <div class="metric-row">
+                <div class="metric-box">
+                  <span class="m-label">Linear</span>
+                  <span class="m-val" id="vel-linear">--</span>
+                  <span class="m-unit">m/s</span>
+                </div>
+                <div class="metric-box">
+                  <span class="m-label">Angular</span>
+                  <span class="m-val" id="vel-angular">--</span>
+                  <span class="m-unit">rad/s</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="metric-group">
+              <div class="metric-title">LiDAR Clearance</div>
+              <div class="clearance-box" id="clearance-container">
+                <div class="clearance-header">
+                  <span class="m-val-large" id="lidar-val">--</span>
+                  <span class="m-unit">m min</span>
+                </div>
+                <div class="clearance-bar-track">
+                  <div class="clearance-bar-fill" id="clearance-bar" style="width: 0%"></div>
+                </div>
+                <span class="clearance-status" id="clearance-status">Clear</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Active Navigation Mission Card (Dynamic) -->
+        <section id="active-mission-card" class="card mission-card hidden">
+          <div class="card-header">
+            <div class="mission-header-title">
+              <span class="pulse-dot-active"></span>
+              <h2>Active Navigation</h2>
+            </div>
+            <span id="mission-status-badge" class="badge badge-primary">RUNNING</span>
+          </div>
+
+          <div class="mission-details">
+            <div class="mission-row">
+              <span class="label">Destination:</span>
+              <span class="value" id="mission-dest-name">--</span>
+            </div>
+            <div class="mission-row">
+              <span class="label">Command ID:</span>
+              <code class="code-badge" id="mission-cmd-id">--</code>
+            </div>
+            <div class="mission-row">
+              <span class="label">Distance Remaining:</span>
+              <span class="value highlight" id="mission-distance">-- m</span>
+            </div>
+            <div class="mission-progress-bar">
+              <div class="progress-bar-fill" id="mission-progress-fill"></div>
+            </div>
+          </div>
+
+          <div class="mission-actions">
+            <button id="cancel-mission-btn" class="btn btn-danger btn-block">
+              🛑 Cancel / Stop Navigation
+            </button>
+          </div>
+        </section>
+
+        <!-- Approved Destinations Drawer -->
+        <section class="card locations-card">
+          <div class="card-header">
+            <h2>Approved Destinations</h2>
+            <span class="text-muted" id="locations-count">6 Locations</span>
+          </div>
+          <p class="section-help">Click to send a navigation request via chat:</p>
+          <div class="locations-list" id="locations-list">
+            <!-- Dynamically populated -->
+            <div class="location-item skeleton">Loading locations...</div>
+          </div>
+        </section>
+      </aside>
+
+      <!-- Right/Main: Conversational Chat Interface -->
+      <section class="chat-section">
+        <!-- Chat Header -->
+        <div class="chat-header">
+          <div class="chat-status-info">
+            <span class="chat-title">Interactive Robot Chat</span>
+            <span class="chat-subtitle">Natural language commands with backend safety tool verification</span>
+          </div>
+          <button id="clear-chat-btn" class="btn btn-sm btn-ghost" title="Clear conversation view">
+            🧹 Clear
+          </button>
+        </div>
+
+        <!-- Chat Messages Container -->
+        <div id="messages-container" class="messages-container" role="log" aria-live="polite">
+          <!-- Initial Assistant Welcome Message -->
+          <div class="message-wrapper assistant">
+            <div class="avatar">🤖</div>
+            <div class="message-bubble">
+              <div class="message-meta">
+                <span class="sender-name">Robot Assistant</span>
+                <span class="timestamp" id="initial-timestamp">--</span>
+              </div>
+              <div class="message-content">
+                <p>Hello! I am your <strong>Autonomous Office Robot</strong> assistant. You can chat with me naturally to:</p>
+                <ul>
+                  <li>Ask for my <strong>current status</strong>, <strong>position</strong>, or <strong>telemetry</strong></li>
+                  <li>Inquire about <strong>approved destinations</strong></li>
+                  <li>Ask me to <strong>navigate</strong> to an office room (e.g. <em>"Take me to Lobby"</em>)</li>
+                  <li>Check navigation progress or <strong>stop/cancel</strong> anytime</li>
+                </ul>
+              </div>
+              <!-- Quick Prompt Suggestions -->
+              <div class="quick-chips">
+                <button class="chip" data-prompt="What destinations can you navigate to?">🗺️ Destinations</button>
+                <button class="chip" data-prompt="What is your current robot status?">📊 Status</button>
+                <button class="chip" data-prompt="Please take me to the Lobby">🚪 Go to Lobby</button>
+                <button class="chip" data-prompt="Take me to the Experience Room">🏢 Experience Room</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Typing Indicator -->
+        <div id="typing-indicator" class="typing-indicator hidden">
+          <div class="avatar">🤖</div>
+          <div class="typing-bubble">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="typing-text">Robot thinking & validating tools...</span>
+          </div>
+        </div>
+
+        <!-- Error Toast Notification -->
+        <div id="error-toast" class="error-toast hidden" role="alert">
+          <span class="error-icon">⚠️</span>
+          <span id="error-toast-msg" class="error-msg">An error occurred</span>
+          <button id="close-toast-btn" class="close-toast">&times;</button>
+        </div>
+
+        <!-- Chat Input Form -->
+        <form id="chat-form" class="chat-input-bar">
+          <div class="input-wrapper">
+            <textarea
+              id="message-input"
+              placeholder="Ask the robot or type a command... (e.g., 'Take me to the Board Room')"
+              rows="1"
+              autocomplete="off"
+              required
+            ></textarea>
+          </div>
+          <button type="submit" id="send-btn" class="btn btn-primary send-btn" aria-label="Send Message">
+            <span class="send-text">Send</span>
+            <svg class="send-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

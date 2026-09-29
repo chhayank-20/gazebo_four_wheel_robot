@@ -1,0 +1,94 @@
+[
+  {
+    "tour_id": 3,
+    "name": "Leg 1: Lobby -> Living Demo",
+    "status": "SUCCEEDED",
+    "duration_sec": 16.66,
+    "physical_goal_dist_m": 0.2914,
+    "physical_yaw_error_deg": 15.23,
+    "pose_disagreement_m": 0.0513,
+    "recovery_count": 0,
+    "min_lidar_range_m": 0.671,
+    "wall_contact": false,
+    "anomalies": "NONE",
+    "final_gazebo_pose": {
+      "x": -2.3935,
+      "y": 10.2287,
+      "yaw": 1.8367
+    },
+    "final_nav2_pose": {
+      "x": -2.3844,
+      "y": 10.1783,
+      "yaw": 1.8247
+    }
+  },
+  {
+    "tour_id": 3,
+    "name": "Leg 2: Living Demo -> Board Room",
+    "status": "SUCCEEDED",
+    "duration_sec": 45.88,
+    "physical_goal_dist_m": 0.2823,
+    "physical_yaw_error_deg": 13.8,
+    "pose_disagreement_m": 0.0,
+    "recovery_count": 0,
+    "min_lidar_range_m": 0.615,
+    "wall_contact": false,
+    "anomalies": "NONE",
+    "final_gazebo_pose": {
+      "x": -22.9158,
+      "y": 9.2306,
+      "yaw": 2.9006
+    },
+    "final_nav2_pose": {
+      "x": -22.9158,
+      "y": 9.2306,
+      "yaw": 2.7635
+    }
+  },
+  {
+    "tour_id": 3,
+    "name": "Leg 3: Board Room -> Accounts",
+    "status": "SUCCEEDED",
+    "duration_sec": 56.16,
+    "physical_goal_dist_m": 0.3369,
+    "physical_yaw_error_deg": 3.83,
+    "pose_disagreement_m": 0.0057,
+    "recovery_count": 0,
+    "min_lidar_range_m": 0.259,
+    "wall_contact": false,
+    "anomalies": "NONE",
+    "final_gazebo_pose": {
+      "x": -46.6648,
+      "y": 1.4656,
+      "yaw": 3.0746
+    },
+    "final_nav2_pose": {
+      "x": -46.6613,
+      "y": 1.47,
+      "yaw": 3.0901
+    }
+  },
+  {
+    "tour_id": 3,
+    "name": "Leg 4: Accounts -> Lobby",
+    "status": "SUCCEEDED",
+    "duration_sec": 101.49,
+    "physical_goal_dist_m": 0.2958,
+    "physical_yaw_error_deg": 15.59,
+    "pose_disagreement_m": 0.0,
+    "recovery_count": 0,
+    "min_lidar_range_m": 0.205,
+    "wall_contact": false,
+    "anomalies": "NONE",
+    "final_gazebo_pose": {
+      "x": -1.906,
+      "y": 0.2762,
+      "yaw": 1.2987
+    },
+    "final_nav2_pose": {
+      "x": -1.906,
+      "y": 0.2761,
+      "yaw": 1.1792
+    }
+  }
+]

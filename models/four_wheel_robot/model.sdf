@@ -352,7 +352,7 @@
       <child>laser_link</child>
     </joint>
 
-    <!-- Native Gazebo Sim DiffDrive Plugin (Skid Steer 4-Wheel Drive) -->
+    <!-- Native Gazebo Sim DiffDrive Plugin (Skid Steer 4-Wheel Drive actuation) -->
     <plugin
       filename="gz-sim-diff-drive-system"
       name="gz::sim::systems::DiffDrive">
@@ -371,9 +371,22 @@
       <max_angular_velocity>3.0</max_angular_velocity>
       <min_angular_velocity>-3.0</min_angular_velocity>
       <topic>/cmd_vel</topic>
-      <odom_topic>/odom</odom_topic>
-      <frame_id>odom</frame_id>
+      <odom_topic>/model/four_wheel_robot/wheel_odom</odom_topic>
+      <tf_topic>/model/four_wheel_robot/wheel_tf</tf_topic>
+      <frame_id>wheel_odom</frame_id>
       <child_frame_id>base_link</child_frame_id>
+      <odom_publish_frequency>20</odom_publish_frequency>
+    </plugin>
+
+    <!-- Ground-truth Odometry Publisher (Phase 1 stabilization) -->
+    <plugin
+      filename="gz-sim-odometry-publisher-system"
+      name="gz::sim::systems::OdometryPublisher">
+      <odom_frame>odom</odom_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+      <odom_topic>/odom</odom_topic>
+      <tf_topic>/model/four_wheel_robot/tf</tf_topic>
+      <dimensions>2</dimensions>
       <odom_publish_frequency>20</odom_publish_frequency>
     </plugin>
 
