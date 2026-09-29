@@ -146,6 +146,9 @@ def wait_for_completion(navigator, timeout, leg_name, step_label=""):
     moving_count = 0
     min_lidar = 999.0
     final_recoveries = 0
+    collision_count = 0
+    sum_turn_vel = 0.0
+    turn_count = 0
 
     while not navigator.isTaskComplete():
         feedback = navigator.getFeedback()
@@ -153,20 +156,28 @@ def wait_for_completion(navigator, timeout, leg_name, step_label=""):
         elapsed = time.time() - start_time
 
         cur_vel = 0.0
+        cur_ang_vel = 0.0
         try:
             with urllib.request.urlopen("http://localhost:8000/status", timeout=0.5) as req:
                 sdata = json.loads(req.read().decode("utf-8"))
                 vel = sdata.get("velocity", {})
                 lidar = sdata.get("lidar", {})
                 cur_vel = abs(vel.get("linear_x", 0.0))
+                cur_ang_vel = abs(vel.get("angular_z", 0.0))
                 cur_lidar = lidar.get("min_lidar_m", 999.0)
                 if cur_vel > max_linear_vel:
                     max_linear_vel = cur_vel
                 if cur_vel > 0.05:
                     sum_moving_vel += cur_vel
                     moving_count += 1
+                if cur_ang_vel > 0.15:
+                    sum_turn_vel += cur_vel
+                    turn_count += 1
                 if cur_lidar < min_lidar:
                     min_lidar = cur_lidar
+                # Chassis envelope: 0.25m lateral from laser link
+                if cur_lidar <= 0.25:
+                    collision_count += 1
         except Exception:
             pass
 
@@ -181,12 +192,14 @@ def wait_for_completion(navigator, timeout, leg_name, step_label=""):
                 "x": round(cx, 3),
                 "y": round(cy, 3),
                 "dist_rem": round(dist_rem, 3),
-                "vel": round(cur_vel, 3)
+                "vel": round(cur_vel, 3),
+                "ang_vel": round(cur_ang_vel, 3),
+                "min_lidar": round(cur_lidar, 3) if 'cur_lidar' in locals() and cur_lidar < 900 else None
             })
 
             if step % 4 == 0 or dist_rem < 0.8:
                 label = f" [{step_label}]" if step_label else ""
-                print(f"  [{elapsed:5.1f}s]{label} Pose: ({cx:6.2f}, {cy:6.2f}) | Vel: {cur_vel:4.2f}m/s | Rem: {dist_rem:5.2f}m | Rec: {recovers}")
+                print(f"  [{elapsed:5.1f}s]{label} Pose: ({cx:6.2f}, {cy:6.2f}) | Vel: {cur_vel:4.2f}m/s | Rem: {dist_rem:5.2f}m | Rec: {recovers} | MinClear: {min_lidar:.2f}m")
 
         if elapsed > timeout:
             print(f"  [TIMEOUT] Exceeded {timeout}s — cancelling...")
@@ -196,8 +209,10 @@ def wait_for_completion(navigator, timeout, leg_name, step_label=""):
             metrics = {
                 "peak_vel": round(max_linear_vel, 3),
                 "avg_vel": round(sum_moving_vel / max(1, moving_count), 3),
+                "avg_turn_vel": round(sum_turn_vel / max(1, turn_count), 3) if turn_count > 0 else 0.0,
                 "recoveries": final_recoveries,
-                "min_lidar": round(min_lidar, 3) if min_lidar < 900 else None
+                "min_lidar": round(min_lidar, 3) if min_lidar < 900 else None,
+                "collisions": collision_count
             }
             return False, elapsed, trajectory, metrics
 
@@ -209,8 +224,10 @@ def wait_for_completion(navigator, timeout, leg_name, step_label=""):
     metrics = {
         "peak_vel": round(max_linear_vel, 3),
         "avg_vel": round(sum_moving_vel / max(1, moving_count), 3),
+        "avg_turn_vel": round(sum_turn_vel / max(1, turn_count), 3) if turn_count > 0 else 0.0,
         "recoveries": final_recoveries,
-        "min_lidar": round(min_lidar, 3) if min_lidar < 900 else None
+        "min_lidar": round(min_lidar, 3) if min_lidar < 900 else None,
+        "collisions": collision_count
     }
     return success, elapsed, trajectory, metrics
 
@@ -288,7 +305,7 @@ def navigate_leg(navigator, leg):
     MAX_ALLOWED_ERROR_M = 0.35  # Strict check against Nav2 xy_goal_tolerance (0.35m)
     physical_arrival_ok = (pos_err is not None and pos_err <= MAX_ALLOWED_ERROR_M)
 
-    print(f"  Speed: Peak = {metrics['peak_vel']:.2f} m/s | Avg = {metrics['avg_vel']:.2f} m/s | Rec = {metrics['recoveries']} | Min LiDAR = {metrics['min_lidar']} m")
+    print(f"  Speed: Peak = {metrics['peak_vel']:.2f} m/s | Avg = {metrics['avg_vel']:.2f} m/s (Turn: {metrics['avg_turn_vel']:.2f} m/s) | Rec = {metrics['recoveries']} | Min LiDAR = {metrics['min_lidar']} m | Collisions = {metrics['collisions']}")
 
     if success and physical_arrival_ok:
         print(f"  RESULT: SUCCESS - Goal Reached in {total_elapsed:.1f}s!")
@@ -301,8 +318,10 @@ def navigate_leg(navigator, leg):
             "error_m": round(pos_err, 3),
             "peak_vel": metrics["peak_vel"],
             "avg_vel": metrics["avg_vel"],
+            "avg_turn_vel": metrics["avg_turn_vel"],
             "recoveries": metrics["recoveries"],
             "min_lidar": metrics["min_lidar"],
+            "collisions": metrics["collisions"],
             "trajectory_points": len(all_trajectory),
             "trajectory": all_trajectory
         }
@@ -324,8 +343,10 @@ def navigate_leg(navigator, leg):
             "error_m": round(pos_err, 3) if pos_err is not None else None,
             "peak_vel": metrics["peak_vel"],
             "avg_vel": metrics["avg_vel"],
+            "avg_turn_vel": metrics["avg_turn_vel"],
             "recoveries": metrics["recoveries"],
             "min_lidar": metrics["min_lidar"],
+            "collisions": metrics["collisions"],
             "trajectory": all_trajectory
         }
 
@@ -333,7 +354,9 @@ def navigate_leg(navigator, leg):
 def main():
     parser = argparse.ArgumentParser(description="Test Office Autonomous Navigation with Nav2")
     parser.add_argument("--leg", type=str, default="demo",
-                        help="Leg to run: demo (short demo: Lobby -> Experience Centre -> Board Room), all (full tour), or 1, 2, 3, 4")
+                        help="Leg to run: demo, all (full tour), or 1, 2, 3, 4")
+    parser.add_argument("--tours", type=int, default=1,
+                        help="Number of consecutive full tours to run")
     parser.add_argument("--report", type=str,
                         default="/workspace/gazebo_four_wheel_robot/office_nav_report.json",
                         help="Path to output JSON report")
@@ -343,6 +366,7 @@ def main():
     print(" Office Autonomous Navigation Suite")
     print(" Stack: ROS 2 Jazzy + Gazebo Harmonic + Nav2")
     print(" Map: Casadigi Office Floor Plan (1720x620, 0.05m/px)")
+    print(f" Target Speed: 1.25 m/s | Tours: {args.tours}")
     print("==========================================================")
 
     rclpy.init()
@@ -350,8 +374,6 @@ def main():
     print("Waiting for Nav2 stack to be active and ready...")
     navigator.waitUntilNav2Active(localizer="robot_localization")
     print("Nav2 is active and ready for navigation!\n")
-
-    results = []
 
     if args.leg == "all":
         legs_to_run = TOUR_LEGS
@@ -367,30 +389,56 @@ def main():
         print(f"Unknown leg: {args.leg}. Use demo, all, or 1, 2, 3, 4.")
         sys.exit(1)
 
-    total_start = time.time()
-    for leg in legs_to_run:
-        res = navigate_leg(navigator, leg)
-        results.append({
-            "leg_id": leg["leg_id"],
-            "leg_name": leg["name"],
-            "result": res
-        })
-        if not res["success"]:
-            print(f"\n[ABORT] Tour interrupted due to failure in {leg['name']}")
-            break
-        time.sleep(2.0)
+    all_tours_data = []
+    overall_start = time.time()
 
-    total_elapsed = time.time() - total_start
+    for tour_idx in range(1, args.tours + 1):
+        print("\n" + "#" * 65)
+        print(f" STARTING TOUR {tour_idx} OF {args.tours}")
+        print("#" * 65)
+        tour_start = time.time()
+        tour_results = []
+
+        for leg in legs_to_run:
+            res = navigate_leg(navigator, leg)
+            tour_results.append({
+                "leg_id": leg["leg_id"],
+                "leg_name": leg["name"],
+                "result": res
+            })
+            if not res["success"]:
+                print(f"\n[ABORT] Tour {tour_idx} interrupted due to failure in {leg['name']}")
+                break
+            time.sleep(2.0)
+
+        tour_elapsed = time.time() - tour_start
+        all_tours_data.append({
+            "tour_index": tour_idx,
+            "tour_elapsed_s": round(tour_elapsed, 2),
+            "legs": tour_results
+        })
+
+        if not all(r["result"]["success"] for r in tour_results):
+            break
+
+    total_elapsed = time.time() - overall_start
+
     print("\n" + "=" * 65)
-    print(" TOUR SUMMARY")
+    print(f" OVERALL TOURS SUMMARY ({len(all_tours_data)} tour(s) executed)")
     print(f" Total time: {total_elapsed:.1f}s")
-    for r in results:
-        status = "PASSED [OK]" if r["result"]["success"] else "FAILED [X]"
-        t = r["result"]["elapsed"]
-        err = r["result"].get("error_m", "N/Am")
-        pv = r["result"].get("peak_vel", "N/A")
-        rec = r["result"].get("recoveries", 0)
-        print(f" - {r['leg_name']:46s}: {status} ({t}s | err: {err}m | peak: {pv}m/s | rec: {rec})")
+    for t_data in all_tours_data:
+        t_idx = t_data["tour_index"]
+        t_el = t_data["tour_elapsed_s"]
+        print(f"\n--- Tour {t_idx} (Duration: {t_el}s) ---")
+        for r in t_data["legs"]:
+            status = "PASSED [OK]" if r["result"]["success"] else "FAILED [X]"
+            t = r["result"]["elapsed"]
+            err = r["result"].get("error_m", "N/Am")
+            pv = r["result"].get("peak_vel", "N/A")
+            rec = r["result"].get("recoveries", 0)
+            coll = r["result"].get("collisions", 0)
+            min_c = r["result"].get("min_lidar", "N/A")
+            print(f" - {r['leg_name']:46s}: {status} ({t}s | err: {err}m | peak: {pv}m/s | rec: {rec} | min_clear: {min_c}m | coll: {coll})")
     print("=" * 65)
 
     os.makedirs(os.path.dirname(os.path.abspath(args.report)), exist_ok=True)
@@ -398,11 +446,14 @@ def main():
         json.dump({
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "total_elapsed_s": round(total_elapsed, 2),
-            "legs": results
+            "tours": all_tours_data
         }, f, indent=2)
     print(f"Report written to: {args.report}")
 
-    all_succeeded = all(r["result"]["success"] for r in results)
+    all_succeeded = all(
+        all(r["result"]["success"] for r in t["legs"])
+        for t in all_tours_data
+    )
     sys.exit(0 if all_succeeded else 1)
 
 
