@@ -140,6 +140,8 @@ def create_app(
     command_manager = manager or command_manager or CommandManager()
     llm_service = service or LLMService(ros_adapter=ros_adapter, command_manager=command_manager)
     camera_controller = camera or camera_controller or get_camera_controller()
+    if hasattr(camera_controller, "set_ros_adapter"):
+        camera_controller.set_ros_adapter(ros_adapter)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -150,8 +152,15 @@ def create_app(
             logger.info("ROS 2 Adapter started successfully.")
         else:
             logger.warning("ROS 2 Adapter could not start (rclpy may not be available).")
+
+        if hasattr(camera_controller, "start"):
+            await camera_controller.start()
+
         yield
         # Shutdown
+        if hasattr(camera_controller, "stop"):
+            await camera_controller.stop()
+
         logger.info("Shutting down ROS 2 Adapter...")
         ros_adapter.stop()
         logger.info("ROS 2 Adapter stopped.")
@@ -167,6 +176,7 @@ def create_app(
     app.state.ros_adapter = ros_adapter
     app.state.command_manager = command_manager
     app.state.llm_service = llm_service
+    app.state.camera_controller = camera_controller
 
     # Static UI routes
     if os.path.exists(STATIC_DIR):

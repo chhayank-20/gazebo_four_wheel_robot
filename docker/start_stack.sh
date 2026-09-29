@@ -87,14 +87,14 @@ cp /workspace/gazebo_four_wheel_robot/config/gz_gui.config /root/.gz/sim/8/gui.c
 gz sim -g --gui-config /workspace/gazebo_four_wheel_robot/config/gz_gui.config &
 GZ_GUI_PID=$!
 
-# Default presentation view: Angled third-person Follow Robot camera (Milestone 4B Task 4)
+# Default presentation view: Angled third-person Follow Robot camera (Occlusion-aware chase view)
 (
     sleep 4
     echo "Setting default presentation camera (Follow Robot chase view)..."
     gz service -s /gui/follow --reqtype gz.msgs.StringMsg --reptype gz.msgs.Boolean --timeout 3000 \
         --req 'data: "four_wheel_robot"' >/dev/null 2>&1 || true
     gz service -s /gui/follow/offset --reqtype gz.msgs.Vector3d --reptype gz.msgs.Boolean --timeout 3000 \
-        --req 'x: -3.0, y: 0.0, z: 2.2' >/dev/null 2>&1 || true
+        --req 'x: -2.2, y: 0.0, z: 2.5' >/dev/null 2>&1 || true
 ) &
 
 # 10. Start Robot Control FastAPI Server

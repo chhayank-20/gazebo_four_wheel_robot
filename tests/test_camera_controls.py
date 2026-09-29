@@ -124,3 +124,45 @@ def test_post_camera_mode_invalid(client):
     assert response.status_code == 400
     data = response.json()
     assert "Invalid camera mode" in data["detail"]
+
+
+def test_office_geometry_occlusion_detection():
+    """Test OfficeGeometry raycasting correctly detects wall obstructions."""
+    from api.camera import OfficeGeometry
+    geo = OfficeGeometry()
+    assert len(geo.walls) >= 15
+
+    # Known wall: wall_board_east around x=-22.08, y=10.88, z=0..2.6
+    # Line of sight across wall: camera at x=-20.0, y=10.0, z=2.0 -> robot at x=-24.0, y=10.0, z=0.15
+    occluded, wall_name = geo.is_occluded([-20.0, 10.0, 2.0], [-24.0, 10.0, 0.15])
+    assert occluded is True
+    assert wall_name is not None
+
+    # Clear line of sight within room: camera at x=-24.0, y=9.0, z=3.0 -> robot at x=-24.0, y=10.0, z=0.15
+    occluded_clear, _ = geo.is_occluded([-24.0, 9.0, 3.0], [-24.0, 10.0, 0.15])
+    assert occluded_clear is False
+
+
+def test_adaptive_offset_evaluation_boardroom(camera_controller):
+    """Test that candidate offset evaluation picks an unobstructed steep/close view in tight spaces."""
+    # Robot inside Board Room near east wall: rx = -22.9, ry = 9.24, ryaw = 2.98
+    name, offset = camera_controller.evaluate_best_offset(-22.9, 9.24, 2.98)
+    assert offset is not None
+    # Must pick an offset that provides clear visibility
+    rx, ry, ryaw = -22.9, 9.24, 2.98
+    import math
+    wx = rx + offset[0] * math.cos(ryaw) - offset[1] * math.sin(ryaw)
+    wy = ry + offset[0] * math.sin(ryaw) + offset[1] * math.cos(ryaw)
+    wz = offset[2]
+    occ, _ = camera_controller.geometry.is_occluded([wx, wy, wz], [rx, ry, 0.15])
+    assert occ is False
+
+
+def test_adaptive_offset_evaluation_open_corridor(camera_controller):
+    """Test that candidate offset evaluation keeps preferred chase in open corridor."""
+    # Robot in open West Corridor: rx = -25.0, ry = 7.25, ryaw = 3.1415
+    name, offset = camera_controller.evaluate_best_offset(-25.0, 7.25, 3.1415)
+    assert name == "preferred_chase"
+    assert offset[0] == -2.2
+    assert offset[2] == 2.5
+
