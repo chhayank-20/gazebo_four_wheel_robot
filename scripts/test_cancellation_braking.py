@@ -39,18 +39,15 @@ def main():
     navigator.waitUntilNav2Active(localizer="robot_localization")
     print("Nav2 is ready.")
 
-    # Target: Board Room via corridor
-    # From Living Demo (-2.38, 10.26) to corridor waypoint (-2.5, 7.4) and then (-23.0, 7.4)
+    # Target: Living Demo via straight corridor from Lobby
     poses = [
-        make_pose_stamped(navigator, -2.50, 7.40, -1.5708),
-        make_pose_stamped(navigator, -23.00, 7.40, 1.5708),
-        make_pose_stamped(navigator, -23.00, 9.50, 3.1415),
+        make_pose_stamped(navigator, -2.50, 10.50, 1.5708),
     ]
 
-    print("Dispatching navigation towards Board Room...")
+    print("Dispatching navigation towards Living Demo (straight corridor run)...")
     navigator.goThroughPoses(poses)
 
-    print("Monitoring velocity until speed >= 0.85 m/s...")
+    print("Monitoring velocity until speed >= 1.20 m/s (highest speed test)...")
     start_time = time.time()
     top_speed_reached = 0.0
     cancel_sent = False
@@ -69,8 +66,8 @@ def main():
 
         print(f"  [T+{time.time()-start_time:.1f}s] Pose: ({px:6.2f}, {py:6.2f}) | Vel: {lin_v:.2f} m/s")
 
-        if lin_v >= 0.85 and not cancel_sent:
-            print(f"\n>>> TARGET SPEED DETECTED ({lin_v:.2f} m/s)! TRIGGERING CANCELLATION NOW <<<")
+        if lin_v >= 1.20 and not cancel_sent:
+            print(f"\n>>> TARGET MAX SPEED DETECTED ({lin_v:.2f} m/s)! TRIGGERING CANCELLATION NOW <<<")
             t_cancel = time.time()
             cancel_pose = (px, py)
             cancel_speed = lin_v
@@ -78,7 +75,7 @@ def main():
             cancel_sent = True
             break
 
-        time.sleep(0.15)
+        time.sleep(0.1)
 
     if not cancel_sent:
         print("[FAIL] Did not reach threshold speed within timeout.")
