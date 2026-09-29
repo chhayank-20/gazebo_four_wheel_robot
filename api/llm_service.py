@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import random
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -273,12 +274,33 @@ class OpenAICompatibleProvider(BaseLLMProvider):
         api_key: str,
         model: str,
         base_url: Optional[str] = None,
-        timeout: float = 15.0,
+        timeout: float = 25.0,
     ):
         self.api_key = api_key
         self.model = model
         self.base_url = (base_url or "https://api.openai.com/v1").rstrip("/")
         self.timeout = timeout
+
+    @staticmethod
+    def _calculate_backoff(attempt: int, resp: Optional[httpx.Response] = None) -> float:
+        """
+        Calculates bounded backoff delay.
+        Respects Retry-After header on HTTP 429 / 503 when available (clamped between 0.5s and 10.0s).
+        Otherwise applies exponential backoff with full jitter (e.g. attempt 0: ~1.1-1.5s, attempt 1: ~2.1-2.5s).
+        """
+        if resp is not None and resp.status_code in (429, 503):
+            retry_after = resp.headers.get("Retry-After") or resp.headers.get("retry-after")
+            if retry_after:
+                try:
+                    val = float(retry_after)
+                    return max(0.5, min(val, 10.0))
+                except ValueError:
+                    pass
+
+        # Exponential backoff: base 1.0s * (2 ** attempt) + jitter [0.1, 0.5]s, clamped at 10.0s max
+        base = 1.0 * (2 ** attempt)
+        jitter = random.uniform(0.1, 0.5)
+        return min(base + jitter, 10.0)
 
     async def generate_response(
         self,
@@ -305,27 +327,32 @@ class OpenAICompatibleProvider(BaseLLMProvider):
                         headers=headers,
                         json=payload,
                     )
-                except (httpx.ReadTimeout, httpx.ConnectTimeout) as e:
+                except (httpx.TimeoutException, httpx.NetworkError) as e:
                     if attempt < 2:
+                        delay = self._calculate_backoff(attempt)
                         logger.warning(
-                            "LLM provider request timeout (%s, attempt %d/3). Retrying...",
+                            "LLM provider request timeout/network error (%s, attempt %d/3). Retrying in %.2fs...",
                             e,
                             attempt + 1,
+                            delay,
                         )
-                        await asyncio.sleep(1.5 * (attempt + 1))
+                        await asyncio.sleep(delay)
                         continue
-                    raise RuntimeError(f"LLM Provider connection timed out after {self.timeout}s: {e}")
+                    raise TimeoutError(f"LLM Provider connection timed out after {self.timeout}s: {e}")
 
-                # Retry on transient upstream errors (Google 500 INTERNAL, 502, 503, 504, 429)
+                # Retry transient server errors (500, 502, 503, 504) and rate limits (429)
                 if resp.status_code in (500, 502, 503, 504, 429) and attempt < 2:
+                    delay = self._calculate_backoff(attempt, resp)
                     logger.warning(
-                        "Transient LLM provider error HTTP %d (attempt %d/3). Retrying in %.1fs...",
+                        "Transient LLM provider error HTTP %d (attempt %d/3). Retrying in %.2fs...",
                         resp.status_code,
                         attempt + 1,
-                        1.5 * (attempt + 1),
+                        delay,
                     )
-                    await asyncio.sleep(1.5 * (attempt + 1))
+                    await asyncio.sleep(delay)
                     continue
+
+                # Non-retryable status (e.g. 400, 401, 403, 404, 422) or last attempt
                 break
 
             if resp is None or resp.status_code != 200:

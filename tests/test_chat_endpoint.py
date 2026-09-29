@@ -362,3 +362,185 @@ def test_execute_tool_invalid_location():
     assert "error" in result
     assert "secret_vault" in result["error"]
     assert "Approved locations" in result["error"]
+
+
+# 10. OpenAICompatibleProvider Focused Retry & Timeout Unit Tests
+import asyncio
+from unittest.mock import AsyncMock, patch, MagicMock
+from api.llm_service import OpenAICompatibleProvider
+import httpx
+
+
+def _make_mock_response(status_code: int, json_data: dict, headers: dict = None):
+    mock_resp = MagicMock(spec=httpx.Response)
+    mock_resp.status_code = status_code
+    mock_resp.json.return_value = json_data
+    mock_resp.text = json.dumps(json_data)
+    mock_resp.headers = headers or {}
+    return mock_resp
+
+
+def test_retry_transient_500_then_success():
+    """Confirms transient HTTP 500 error retries with backoff and succeeds on 2nd attempt."""
+    async def _run():
+        provider = OpenAICompatibleProvider(api_key="test_key", model="test_model", timeout=25.0)
+
+        success_data = {
+            "choices": [{"message": {"content": "Hello from robot", "tool_calls": None}}]
+        }
+        resp_500 = _make_mock_response(500, {"error": "Internal error encountered."})
+        resp_200 = _make_mock_response(200, success_data)
+
+        with patch.object(httpx.AsyncClient, "post", side_effect=[resp_500, resp_200]) as mock_post, \
+             patch("asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
+            result = await provider.generate_response(messages=[{"role": "user", "content": "hi"}], tools=[])
+            assert mock_post.call_count == 2
+            assert mock_sleep.call_count == 1
+            assert result["content"] == "Hello from robot"
+
+    asyncio.run(_run())
+
+
+def test_retry_repeated_503_fails_bounded():
+    """Confirms repeated HTTP 503 is retried up to maximum 3 attempts, then raises RuntimeError."""
+    async def _run():
+        provider = OpenAICompatibleProvider(api_key="test_key", model="test_model", timeout=25.0)
+        resp_503 = _make_mock_response(503, {"error": "Service Unavailable"})
+
+        with patch.object(httpx.AsyncClient, "post", side_effect=[resp_503, resp_503, resp_503]) as mock_post, \
+             patch("asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
+            with pytest.raises(RuntimeError) as exc_info:
+                await provider.generate_response(messages=[{"role": "user", "content": "hi"}], tools=[])
+            assert mock_post.call_count == 3
+            assert mock_sleep.call_count == 2
+            assert "503" in str(exc_info.value)
+
+    asyncio.run(_run())
+
+
+def test_retry_timeout_then_success():
+    """Confirms transient ReadTimeout retries and succeeds on next attempt."""
+    async def _run():
+        provider = OpenAICompatibleProvider(api_key="test_key", model="test_model", timeout=25.0)
+        success_data = {
+            "choices": [{"message": {"content": "Ready to help", "tool_calls": None}}]
+        }
+        resp_200 = _make_mock_response(200, success_data)
+
+        with patch.object(httpx.AsyncClient, "post", side_effect=[httpx.ReadTimeout("timed out"), resp_200]) as mock_post, \
+             patch("asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
+            result = await provider.generate_response(messages=[{"role": "user", "content": "hi"}], tools=[])
+            assert mock_post.call_count == 2
+            assert mock_sleep.call_count == 1
+            assert result["content"] == "Ready to help"
+
+    asyncio.run(_run())
+
+
+def test_retry_persistent_timeout_raises_timeout_error():
+    """Confirms persistent timeout across all 3 attempts raises TimeoutError (mapped to HTTP 504)."""
+    async def _run():
+        provider = OpenAICompatibleProvider(api_key="test_key", model="test_model", timeout=25.0)
+
+        with patch.object(httpx.AsyncClient, "post", side_effect=[
+            httpx.ReadTimeout("timed out 1"),
+            httpx.ReadTimeout("timed out 2"),
+            httpx.ReadTimeout("timed out 3"),
+        ]) as mock_post, patch("asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
+            with pytest.raises(TimeoutError) as exc_info:
+                await provider.generate_response(messages=[{"role": "user", "content": "hi"}], tools=[])
+            assert mock_post.call_count == 3
+            assert mock_sleep.call_count == 2
+            assert "timed out after 25.0s" in str(exc_info.value)
+
+    asyncio.run(_run())
+
+
+def test_retry_429_respects_retry_after_header():
+    """Confirms HTTP 429 parses and respects Retry-After header with bounded backoff."""
+    async def _run():
+        provider = OpenAICompatibleProvider(api_key="test_key", model="test_model", timeout=25.0)
+        success_data = {
+            "choices": [{"message": {"content": "Rate limit cleared", "tool_calls": None}}]
+        }
+        resp_429 = _make_mock_response(429, {"error": "Rate limit exceeded"}, headers={"Retry-After": "3.5"})
+        resp_200 = _make_mock_response(200, success_data)
+
+        with patch.object(httpx.AsyncClient, "post", side_effect=[resp_429, resp_200]) as mock_post, \
+             patch("asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
+            result = await provider.generate_response(messages=[{"role": "user", "content": "hi"}], tools=[])
+            assert mock_post.call_count == 2
+            mock_sleep.assert_called_once_with(3.5)
+            assert result["content"] == "Rate limit cleared"
+
+    asyncio.run(_run())
+
+
+def test_non_retryable_401_and_400():
+    """Confirms 401 Unauthorized and 400 Bad Request immediately fail without retrying."""
+    async def _run():
+        provider = OpenAICompatibleProvider(api_key="test_key", model="test_model", timeout=25.0)
+        resp_401 = _make_mock_response(401, {"error": "Invalid API Key"})
+
+        with patch.object(httpx.AsyncClient, "post", return_value=resp_401) as mock_post, \
+             patch("asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
+            with pytest.raises(RuntimeError) as exc_401:
+                await provider.generate_response(messages=[{"role": "user", "content": "hi"}], tools=[])
+            assert mock_post.call_count == 1
+            assert mock_sleep.call_count == 0
+            assert "401" in str(exc_401.value)
+
+        resp_400 = _make_mock_response(400, {"error": "Bad Request: unrecognized parameter"})
+        with patch.object(httpx.AsyncClient, "post", return_value=resp_400) as mock_post, \
+             patch("asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
+            with pytest.raises(RuntimeError) as exc_400:
+                await provider.generate_response(messages=[{"role": "user", "content": "hi"}], tools=[])
+            assert mock_post.call_count == 1
+            assert mock_sleep.call_count == 0
+            assert "400" in str(exc_400.value)
+
+    asyncio.run(_run())
+
+
+def test_prevention_of_duplicate_navigation_execution():
+    """
+    Confirms that if an LLM request succeeds on step 1 (executing navigate_to_location)
+    but subsequent response generation fails or times out, the navigation tool is NOT
+    re-executed or duplicated.
+    """
+    async def _run():
+        adapter = MockRosAdapter(healthy=True)
+        manager = CommandManager()
+
+        # Step 1: Model requests navigation tool call
+        step1_response = {
+            "content": None,
+            "tool_calls": [
+                {
+                    "id": "call_nav_123",
+                    "function": {
+                        "name": "navigate_to_location",
+                        "arguments": json.dumps({"location_id": "lobby"}),
+                    },
+                }
+            ],
+        }
+
+        mock_provider = MagicMock(spec=OpenAICompatibleProvider)
+        # Step 1 succeeds, Step 2 (subsequent turn to summarize) raises TimeoutError
+        mock_provider.generate_response = AsyncMock(side_effect=[
+            step1_response,
+            TimeoutError("LLM Provider connection timed out after 25.0s"),
+        ])
+
+        service = LLMService(ros_adapter=adapter, command_manager=manager, provider=mock_provider)
+
+        with pytest.raises(TimeoutError):
+            await service.chat("Take me to the lobby")
+
+        # Verify tool was executed exactly once and goal dispatched exactly once
+        assert len(adapter.dispatched_goals) == 1
+        assert adapter.dispatched_goals[0][1] == "lobby"
+
+    asyncio.run(_run())
+
