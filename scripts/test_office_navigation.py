@@ -177,6 +177,32 @@ def wait_for_completion(navigator, timeout, leg_name, step_label=""):
     return success, elapsed, trajectory
 
 
+def get_settled_pose(timeout=4.0):
+    """Queries http://localhost:8000/status for the settled robot pose once stopped."""
+    import urllib.request
+    start = time.time()
+    last_pose = None
+    while time.time() - start < timeout:
+        try:
+            with urllib.request.urlopen("http://localhost:8000/status", timeout=1.0) as req:
+                data = json.loads(req.read().decode("utf-8"))
+                pose = data.get("pose")
+                vel = data.get("velocity")
+                if pose:
+                    last_pose = (pose.get("x"), pose.get("y"), pose.get("yaw"))
+                if pose and vel:
+                    lin_v = abs(vel.get("linear_x", 1.0))
+                    ang_v = abs(vel.get("angular_z", 1.0))
+                    if lin_v < 0.05 and ang_v < 0.05:
+                        return last_pose
+        except Exception:
+            pass
+        time.sleep(0.2)
+    if last_pose:
+        return last_pose
+    return None, None, None
+
+
 def navigate_leg(navigator, leg):
     dest = DESTINATIONS[leg["final_dest"]]
     gx, gy, gyaw = dest["x"], dest["y"], dest["yaw"]
@@ -213,31 +239,46 @@ def navigate_leg(navigator, leg):
     all_trajectory.extend(trajectory)
 
     print("-" * 65)
-    final_x = all_trajectory[-1]["x"] if all_trajectory else None
-    final_y = all_trajectory[-1]["y"] if all_trajectory else None
+    settled_x, settled_y, _ = get_settled_pose()
+    if settled_x is not None:
+        final_x, final_y = settled_x, settled_y
+    else:
+        final_x = all_trajectory[-1]["x"] if all_trajectory else None
+        final_y = all_trajectory[-1]["y"] if all_trajectory else None
+
     pos_err = math.hypot(final_x - gx, final_y - gy) if final_x is not None else None
-
     total_elapsed = time.time() - start_time
+    MAX_ALLOWED_ERROR_M = 0.35  # Strict check against Nav2 xy_goal_tolerance (0.35m)
+    physical_arrival_ok = (pos_err is not None and pos_err <= MAX_ALLOWED_ERROR_M)
 
-    if success:
+    if success and physical_arrival_ok:
         print(f"  RESULT: SUCCESS - Goal Reached in {total_elapsed:.1f}s!")
-        print(f"  Final Position: ({final_x:.3f}, {final_y:.3f}) | Error: {pos_err:.3f}m")
+        print(f"  Final Settled Position: ({final_x:.3f}, {final_y:.3f}) | Error: {pos_err:.3f}m (tolerance: {MAX_ALLOWED_ERROR_M}m)")
         return {
             "success": True,
             "target": dest["name"],
             "elapsed": round(total_elapsed, 2),
-            "final_pose": (final_x, final_y),
+            "final_pose": (round(final_x, 3), round(final_y, 3)),
             "error_m": round(pos_err, 3),
             "trajectory_points": len(all_trajectory),
             "trajectory": all_trajectory
         }
     else:
-        reason = "TIMEOUT" if not success and total_elapsed >= timeout else "FAILED"
+        if success and not physical_arrival_ok:
+            reason = f"GOAL_ERROR_EXCEEDED ({pos_err:.3f}m > {MAX_ALLOWED_ERROR_M}m)"
+        elif not success and total_elapsed >= timeout:
+            reason = "TIMEOUT"
+        else:
+            reason = "FAILED"
         print(f"  RESULT: {reason} after {total_elapsed:.1f}s")
+        if final_x is not None:
+            print(f"  Final Settled Position: ({final_x:.3f}, {final_y:.3f}) | Error: {pos_err:.3f}m (tolerance: {MAX_ALLOWED_ERROR_M}m)")
         return {
             "success": False,
             "reason": reason,
             "elapsed": round(total_elapsed, 2),
+            "final_pose": (round(final_x, 3), round(final_y, 3)) if final_x is not None else None,
+            "error_m": round(pos_err, 3) if pos_err is not None else None,
             "trajectory": all_trajectory
         }
 

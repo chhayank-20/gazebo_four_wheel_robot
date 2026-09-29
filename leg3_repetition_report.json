@@ -1,0 +1,62 @@
+[
+  {
+    "run": 1,
+    "success": true,
+    "action_result": "TaskResult.SUCCEEDED",
+    "elapsed_s": 77.99,
+    "pose_at_completion": [
+      -46.6798,
+      1.4193,
+      3.314
+    ],
+    "error_at_completion_m": 0.3302,
+    "pose_settled_1s_later": [
+      -46.7217,
+      1.4005,
+      3.3028
+    ],
+    "error_settled_m": 0.2956,
+    "settling_drift_m": 0.0459,
+    "recoveries": 0
+  },
+  {
+    "run": 2,
+    "success": true,
+    "action_result": "TaskResult.SUCCEEDED",
+    "elapsed_s": 81.97,
+    "pose_at_completion": [
+      -46.6515,
+      1.408,
+      3.1366
+    ],
+    "error_at_completion_m": 0.3604,
+    "pose_settled_1s_later": [
+      -46.6736,
+      1.3851,
+      3.0624
+    ],
+    "error_settled_m": 0.346,
+    "settling_drift_m": 0.0318,
+    "recoveries": 0
+  },
+  {
+    "run": 3,
+    "success": true,
+    "action_result": "TaskResult.SUCCEEDED",
+    "elapsed_s": 84.38,
+    "pose_at_completion": [
+      -46.6567,
+      1.4211,
+      3.3079
+    ],
+    "error_at_completion_m": 0.3523,
+    "pose_settled_1s_later": [
+      -46.7074,
+      1.402,
+      3.2966
+    ],
+    "error_settled_m": 0.3086,
+    "settling_drift_m": 0.0542,
+    "recoveries": 0
+  }
+]
