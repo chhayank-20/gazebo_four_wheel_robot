@@ -73,9 +73,9 @@ class Settings:
     def llm_timeout_seconds(self) -> float:
         """Timeout for external LLM HTTP calls."""
         try:
-            return float(os.environ.get("LLM_TIMEOUT_SECONDS", "15.0"))
+            return float(os.environ.get("LLM_TIMEOUT_SECONDS", "25.0"))
         except ValueError:
-            return 15.0
+            return 25.0
 
 
 settings = Settings()

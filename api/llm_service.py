@@ -299,13 +299,31 @@ class OpenAICompatibleProvider(BaseLLMProvider):
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             resp = None
             for attempt in range(3):
-                resp = await client.post(
-                    f"{self.base_url}/chat/completions",
-                    headers=headers,
-                    json=payload,
-                )
-                # Retry on transient server busy/high demand spikes (HTTP 503 or 429)
-                if resp.status_code in (503, 429) and attempt < 2:
+                try:
+                    resp = await client.post(
+                        f"{self.base_url}/chat/completions",
+                        headers=headers,
+                        json=payload,
+                    )
+                except (httpx.ReadTimeout, httpx.ConnectTimeout) as e:
+                    if attempt < 2:
+                        logger.warning(
+                            "LLM provider request timeout (%s, attempt %d/3). Retrying...",
+                            e,
+                            attempt + 1,
+                        )
+                        await asyncio.sleep(1.5 * (attempt + 1))
+                        continue
+                    raise RuntimeError(f"LLM Provider connection timed out after {self.timeout}s: {e}")
+
+                # Retry on transient upstream errors (Google 500 INTERNAL, 502, 503, 504, 429)
+                if resp.status_code in (500, 502, 503, 504, 429) and attempt < 2:
+                    logger.warning(
+                        "Transient LLM provider error HTTP %d (attempt %d/3). Retrying in %.1fs...",
+                        resp.status_code,
+                        attempt + 1,
+                        1.5 * (attempt + 1),
+                    )
                     await asyncio.sleep(1.5 * (attempt + 1))
                     continue
                 break
