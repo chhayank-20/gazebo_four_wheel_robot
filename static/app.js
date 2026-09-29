@@ -357,41 +357,64 @@
     });
   }
 
+  // --- High-Performance Telemetry & DOM Updating ---
+  let isFetchingHealth = false;
+  let isFetchingStatus = false;
+
+  function updateText(elem, newText) {
+    if (elem && elem.textContent !== newText) {
+      elem.textContent = newText;
+    }
+  }
+
+  function updateClass(elem, newClass) {
+    if (elem && elem.className !== newClass) {
+      elem.className = newClass;
+    }
+  }
+
+  function updateStyle(elem, prop, val) {
+    if (elem && elem.style[prop] !== val) {
+      elem.style[prop] = val;
+    }
+  }
+
   // --- Telemetry & Health Polling ---
   async function fetchRobotHealth() {
+    if (isFetchingHealth) return;
+    isFetchingHealth = true;
     try {
       const res = await fetch(`${API_BASE}/health`);
       if (!res.ok) throw new Error(`Health status: ${res.status}`);
       const data = await res.json();
 
-      // Top pill
-      connectionPill.className = "pill";
+      // Top pill & badges
       if (data.overall_status === "healthy") {
-        connectionPill.classList.add("pill-healthy");
-        connectionText.textContent = "Live & Healthy";
-        healthBadge.className = "badge badge-healthy";
-        healthBadge.textContent = "HEALTHY";
+        updateClass(connectionPill, "pill pill-healthy");
+        updateText(connectionText, "Live & Healthy");
+        updateClass(healthBadge, "badge badge-healthy");
+        updateText(healthBadge, "HEALTHY");
         if (demoHealthBadge) {
-          demoHealthBadge.className = "badge badge-healthy";
-          demoHealthBadge.textContent = "HEALTHY";
+          updateClass(demoHealthBadge, "badge badge-healthy");
+          updateText(demoHealthBadge, "HEALTHY");
         }
       } else if (data.overall_status === "degraded") {
-        connectionPill.classList.add("pill-degraded");
-        connectionText.textContent = "Degraded Feeds";
-        healthBadge.className = "badge badge-degraded";
-        healthBadge.textContent = "DEGRADED";
+        updateClass(connectionPill, "pill pill-degraded");
+        updateText(connectionText, "Degraded Feeds");
+        updateClass(healthBadge, "badge badge-degraded");
+        updateText(healthBadge, "DEGRADED");
         if (demoHealthBadge) {
-          demoHealthBadge.className = "badge badge-degraded";
-          demoHealthBadge.textContent = "DEGRADED";
+          updateClass(demoHealthBadge, "badge badge-degraded");
+          updateText(demoHealthBadge, "DEGRADED");
         }
       } else {
-        connectionPill.classList.add("pill-offline");
-        connectionText.textContent = "Unhealthy";
-        healthBadge.className = "badge badge-unhealthy";
-        healthBadge.textContent = "UNHEALTHY";
+        updateClass(connectionPill, "pill pill-offline");
+        updateText(connectionText, "Unhealthy");
+        updateClass(healthBadge, "badge badge-unhealthy");
+        updateText(healthBadge, "UNHEALTHY");
         if (demoHealthBadge) {
-          demoHealthBadge.className = "badge badge-unhealthy";
-          demoHealthBadge.textContent = "UNHEALTHY";
+          updateClass(demoHealthBadge, "badge badge-unhealthy");
+          updateText(demoHealthBadge, "UNHEALTHY");
         }
       }
 
@@ -402,112 +425,118 @@
       setHealthItem(hScanVal, data.scan_active);
       setHealthItem(hTfVal, data.tf_active);
     } catch (err) {
-      connectionPill.className = "pill pill-offline";
-      connectionText.textContent = "API Disconnected";
-      healthBadge.className = "badge badge-unhealthy";
-      healthBadge.textContent = "OFFLINE";
+      updateClass(connectionPill, "pill pill-offline");
+      updateText(connectionText, "API Disconnected");
+      updateClass(healthBadge, "badge badge-unhealthy");
+      updateText(healthBadge, "OFFLINE");
       if (demoHealthBadge) {
-        demoHealthBadge.className = "badge badge-unhealthy";
-        demoHealthBadge.textContent = "OFFLINE";
+        updateClass(demoHealthBadge, "badge badge-unhealthy");
+        updateText(demoHealthBadge, "OFFLINE");
       }
       setHealthItem(hRosVal, false);
       setHealthItem(hNavVal, false);
       setHealthItem(hOdomVal, false);
       setHealthItem(hScanVal, false);
       setHealthItem(hTfVal, false);
+    } finally {
+      isFetchingHealth = false;
     }
   }
 
   function setHealthItem(elem, isOk) {
-    if (isOk === true) {
-      elem.textContent = "OK";
-      elem.className = "h-status ok";
-    } else {
-      elem.textContent = "OFFLINE";
-      elem.className = "h-status fail";
-    }
+    if (!elem) return;
+    const targetText = isOk ? "OK" : "OFFLINE";
+    const targetClass = isOk ? "h-status ok" : "h-status fail";
+    updateText(elem, targetText);
+    updateClass(elem, targetClass);
   }
 
   async function fetchRobotStatus() {
+    if (isFetchingStatus) return;
+    isFetchingStatus = true;
     try {
       const res = await fetch(`${API_BASE}/status`);
       if (!res.ok) return;
       const data = await res.json();
 
-      telemetryFreshness.textContent = "Updated: " + formatTime(new Date());
+      updateText(telemetryFreshness, "Updated: " + formatTime(new Date()));
 
       // 1. Pose
       if (data.pose) {
-        poseX.textContent = Number(data.pose.x).toFixed(2);
-        poseY.textContent = Number(data.pose.y).toFixed(2);
-        const yawDeg = ((data.pose.yaw * 180) / Math.PI).toFixed(0);
-        poseYaw.textContent = `${yawDeg}°`;
-        poseX.style.color = "";
-        poseY.style.color = "";
-        poseYaw.style.color = "";
+        const nx = Number(data.pose.x).toFixed(2);
+        const ny = Number(data.pose.y).toFixed(2);
+        const yawDeg = `${((data.pose.yaw * 180) / Math.PI).toFixed(0)}°`;
+        updateText(poseX, nx);
+        updateText(poseY, ny);
+        updateText(poseYaw, yawDeg);
+        updateStyle(poseX, "color", "");
+        updateStyle(poseY, "color", "");
+        updateStyle(poseYaw, "color", "");
       } else {
-        poseX.textContent = "None";
-        poseY.textContent = "None";
-        poseYaw.textContent = "None";
-        poseX.style.color = "var(--warning)";
-        poseY.style.color = "var(--warning)";
-        poseYaw.style.color = "var(--warning)";
+        updateText(poseX, "None");
+        updateText(poseY, "None");
+        updateText(poseYaw, "None");
+        updateStyle(poseX, "color", "var(--warning)");
+        updateStyle(poseY, "color", "var(--warning)");
+        updateStyle(poseYaw, "color", "var(--warning)");
       }
 
       // 2. Velocity
       if (data.velocity) {
-        velLinear.textContent = Number(data.velocity.linear_x).toFixed(2);
-        velAngular.textContent = Number(data.velocity.angular_z).toFixed(2);
+        updateText(velLinear, Number(data.velocity.linear_x).toFixed(2));
+        updateText(velAngular, Number(data.velocity.angular_z).toFixed(2));
       } else {
-        velLinear.textContent = "None";
-        velAngular.textContent = "None";
+        updateText(velLinear, "None");
+        updateText(velAngular, "None");
       }
 
       // 3. LiDAR Clearance
       if (data.lidar && data.lidar.min_lidar_m !== null && data.lidar.min_lidar_m !== undefined) {
         const m = Number(data.lidar.min_lidar_m);
-        lidarVal.textContent = m.toFixed(2);
+        updateText(lidarVal, m.toFixed(2));
         const pct = Math.min(100, Math.max(5, (m / 3.0) * 100));
-        clearanceBar.style.width = pct + "%";
+        updateStyle(clearanceBar, "width", pct + "%");
 
         if (m < 0.5) {
-          clearanceBar.style.backgroundColor = "var(--danger)";
-          clearanceStatus.textContent = "Obstacle Close (<0.5m)";
-          clearanceStatus.style.color = "var(--danger)";
+          updateStyle(clearanceBar, "backgroundColor", "var(--danger)");
+          updateText(clearanceStatus, "Obstacle Close (<0.5m)");
+          updateStyle(clearanceStatus, "color", "var(--danger)");
         } else if (m < 1.0) {
-          clearanceBar.style.backgroundColor = "var(--warning)";
-          clearanceStatus.textContent = "Caution (0.5-1.0m)";
-          clearanceStatus.style.color = "var(--warning)";
+          updateStyle(clearanceBar, "backgroundColor", "var(--warning)");
+          updateText(clearanceStatus, "Caution (0.5-1.0m)");
+          updateStyle(clearanceStatus, "color", "var(--warning)");
         } else {
-          clearanceBar.style.backgroundColor = "var(--success)";
-          clearanceStatus.textContent = "Clear (>1.0m)";
-          clearanceStatus.style.color = "var(--success)";
+          updateStyle(clearanceBar, "backgroundColor", "var(--success)");
+          updateText(clearanceStatus, "Clear (>1.0m)");
+          updateStyle(clearanceStatus, "color", "var(--success)");
         }
       } else {
-        lidarVal.textContent = "None";
-        clearanceBar.style.width = "0%";
-        clearanceStatus.textContent = "Stale / No Scan";
-        clearanceStatus.style.color = "var(--warning)";
+        updateText(lidarVal, "None");
+        updateStyle(clearanceBar, "width", "0%");
+        updateText(clearanceStatus, "Stale / No Scan");
+        updateStyle(clearanceStatus, "color", "var(--warning)");
       }
 
       // 4. Active Navigation Mission Card
       updateActiveMissionCard(data.active_command);
     } catch (err) {
       console.warn("Failed to fetch live telemetry:", err);
+    } finally {
+      isFetchingStatus = false;
     }
   }
 
   function updateActiveMissionCard(activeCmd) {
     if (!activeCmd) {
       if (demoMissionText) {
-        demoMissionText.textContent = "Ready · Standby in Lobby";
+        updateText(demoMissionText, "Ready · Standby in Lobby");
         if (demoCancelBtn) demoCancelBtn.classList.add("hidden");
         if (demoDockStopBtn) demoDockStopBtn.classList.add("hidden");
       }
       // If we previously had an active command that finished, mark complete
       if (activeCommandId) {
-        missionStatusBadge.className = "badge badge-healthy";
-        missionStatusBadge.textContent = "FINISHED";
+        updateClass(missionStatusBadge, "badge badge-healthy");
+        updateText(missionStatusBadge, "FINISHED");
         setTimeout(() => {
           activeMissionCard.classList.add("hidden");
           activeCommandId = null;
@@ -521,27 +550,27 @@
     activeCommandId = activeCmd.command_id;
     activeMissionCard.classList.remove("hidden");
 
-    missionDestName.textContent = activeCmd.destination_name || activeCmd.location_id;
-    missionCmdId.textContent = activeCmd.command_id;
+    updateText(missionDestName, activeCmd.destination_name || activeCmd.location_id);
+    updateText(missionCmdId, activeCmd.command_id);
 
     const st = (activeCmd.status || "RUNNING").toUpperCase();
-    missionStatusBadge.textContent = st;
+    updateText(missionStatusBadge, st);
     if (st === "RUNNING" || st === "ACCEPTED") {
-      missionStatusBadge.className = "badge badge-primary";
+      updateClass(missionStatusBadge, "badge badge-primary");
       cancelMissionBtn.disabled = false;
-      cancelMissionBtn.textContent = "🛑 Cancel / Stop Navigation";
+      updateText(cancelMissionBtn, "🛑 Cancel / Stop Navigation");
     } else if (st === "SUCCEEDED") {
-      missionStatusBadge.className = "badge badge-healthy";
+      updateClass(missionStatusBadge, "badge badge-healthy");
       cancelMissionBtn.disabled = true;
     } else {
-      missionStatusBadge.className = "badge badge-unhealthy";
+      updateClass(missionStatusBadge, "badge badge-unhealthy");
       cancelMissionBtn.disabled = true;
     }
 
     if (activeCmd.distance_remaining_m !== null && activeCmd.distance_remaining_m !== undefined) {
-      missionDistance.textContent = Number(activeCmd.distance_remaining_m).toFixed(2) + " m";
+      updateText(missionDistance, Number(activeCmd.distance_remaining_m).toFixed(2) + " m");
     } else {
-      missionDistance.textContent = "Calculating...";
+      updateText(missionDistance, "Calculating...");
     }
 
     // Demo View HUD Sync (Milestone 4B Task 1)
@@ -550,7 +579,7 @@
       const dist = (activeCmd.distance_remaining_m !== null && activeCmd.distance_remaining_m !== undefined)
         ? `${Number(activeCmd.distance_remaining_m).toFixed(1)}m left`
         : "Navigating...";
-      demoMissionText.textContent = `🚀 ${dest} · ${dist}`;
+      updateText(demoMissionText, `🚀 ${dest} · ${dist}`);
       if (demoCancelBtn) demoCancelBtn.classList.remove("hidden");
       if (demoDockStopBtn) demoDockStopBtn.classList.remove("hidden");
     }

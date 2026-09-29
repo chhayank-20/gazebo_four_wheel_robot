@@ -66,9 +66,11 @@ class RosAdapter:
         self.tf_buffer = None
         self.tf_listener = None
 
-        # Short-lived pose cache to avoid redundant TF lookups in rapid polling
+        # Short-lived caches to avoid redundant DDS / TF queries during rapid API polling
         self._cached_pose: Optional[Dict[str, Any]] = None
         self._cached_pose_time: float = 0.0
+        self._cached_health: Optional[Dict[str, Any]] = None
+        self._cached_health_time: float = 0.0
 
     def start(self) -> bool:
         """Initializes ROS 2, starts node and background spinning thread."""
@@ -83,10 +85,6 @@ class RosAdapter:
                 rclpy.init()
 
             self.node = Node(self.node_name)
-            # Use sim time if available
-            self.node.set_parameters([
-                rclpy.parameter.Parameter('use_sim_time', rclpy.Parameter.Type.BOOL, True)
-            ])
 
             # TF Buffer & Listener
             self.tf_buffer = tf2_ros.Buffer()
@@ -198,6 +196,11 @@ class RosAdapter:
                 "overall_status": "unhealthy"
             }
 
+        now = time.time()
+        with self._lock:
+            if self._cached_health is not None and (now - self._cached_health_time) < 1.0:
+                return dict(self._cached_health)
+
         nav2_ready = False
         if self.nav_through_client:
             nav2_ready = self.nav_through_client.server_is_ready()
@@ -211,7 +214,7 @@ class RosAdapter:
         healthy = nav2_ready and odom_fresh and scan_fresh and tf_fresh
         status = "healthy" if healthy else ("degraded" if (odom_fresh or tf_fresh) else "unhealthy")
 
-        return {
+        res = {
             "ros2_connected": True,
             "nav2_action_server_ready": nav2_ready,
             "odom_active": odom_fresh,
@@ -219,6 +222,10 @@ class RosAdapter:
             "tf_active": tf_fresh,
             "overall_status": status
         }
+        with self._lock:
+            self._cached_health = res
+            self._cached_health_time = now
+        return res
 
     def get_health_status(self) -> Dict[str, Any]:
         """Alias for is_healthy."""

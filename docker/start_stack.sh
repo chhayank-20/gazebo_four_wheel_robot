@@ -99,7 +99,7 @@ GZ_GUI_PID=$!
 
 # 10. Start Robot Control FastAPI Server
 echo "Starting Robot Control API server on port 8000..."
-python3 -m uvicorn api.server:app --host 0.0.0.0 --port 8000 > /tmp/api_server.log 2>&1 &
+python3 -m uvicorn api.server:app --host 0.0.0.0 --port 8000 --no-access-log > /tmp/api_server.log 2>&1 &
 API_PID=$!
 
 echo "=========================================================="
