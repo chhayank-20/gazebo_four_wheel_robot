@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_config xmlns="http://openbox.org/3.4/rc" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <theme>
+    <name>Clearlooks</name>
+    <titleLayout></titleLayout>
+    <keepBorder>no</keepBorder>
+    <animateIconify>no</animateIconify>
+  </theme>
+  <applications>
+    <application class="*">
+      <decor>no</decor>
+      <shade>no</shade>
+      <position force="yes">
+        <x>0</x>
+        <y>0</y>
+      </position>
+      <size>
+        <width>100%</width>
+        <height>100%</height>
+      </size>
+      <maximized>yes</maximized>
+    </application>
+  </applications>
+</openbox_config>

@@ -26,6 +26,18 @@
         <button id="tab-telemetry" class="tab-btn" role="tab" data-target="telemetry-sidebar">📊 Telemetry</button>
       </nav>
 
+      <!-- Mode Switcher: Mission Control vs Demo View -->
+      <div class="mode-switcher-container" role="toolbar" aria-label="Dashboard View Modes">
+        <button id="btn-mode-mission" class="mode-toggle-btn active" title="Full Operator Mission Control (Telemetry, 3D Sim, Chat)">
+          <span class="mode-icon">🛠️</span>
+          <span class="mode-label">Mission Control</span>
+        </button>
+        <button id="btn-mode-demo" class="mode-toggle-btn" title="Polished Hackathon Demo View (Maximized 3D Sim with Minimal HUD)">
+          <span class="mode-icon">🎬</span>
+          <span class="mode-label">Demo View</span>
+        </button>
+      </div>
+
       <div class="top-actions">
         <div id="connection-pill" class="pill pill-unknown">
           <span class="pulse-dot"></span>
@@ -232,6 +244,59 @@
             <div id="sim-overlay" class="sim-overlay">
               <div class="sim-spinner"></div>
               <span>Connecting to Gazebo Harmonic 3D Stream...</span>
+            </div>
+
+            <!-- Demo View Presentation Minimal HUD Overlay (Task 1) -->
+            <div id="demo-hud" class="demo-hud hidden">
+              <!-- Top HUD Floating Status Bar -->
+              <div class="demo-hud-top">
+                <div class="demo-hud-brand">
+                  <span class="hud-robot-icon">🤖</span>
+                  <div class="hud-titles">
+                    <span class="hud-robot-name">Autonomous AMR</span>
+                    <span id="demo-health-badge" class="badge badge-healthy">HEALTHY</span>
+                  </div>
+                </div>
+
+                <div id="demo-mission-pill" class="demo-mission-pill">
+                  <span class="pulse-dot-active" id="demo-mission-dot"></span>
+                  <span id="demo-mission-text">Ready · Standby in Lobby</span>
+                  <button id="demo-cancel-btn" class="btn btn-sm btn-danger demo-cancel-btn hidden" title="Cancel Active Navigation">
+                    🛑 STOP
+                  </button>
+                </div>
+
+                <div class="demo-hud-actions">
+                  <div class="demo-cam-group" role="toolbar" aria-label="Demo Camera Modes">
+                    <button class="demo-cam-btn active" id="demo-cam-follow" data-mode="follow" title="Follow Robot">🏃 Follow</button>
+                    <button class="demo-cam-btn" id="demo-cam-topdown" data-mode="top_down" title="Top-Down Overview">🗺️ Top-Down</button>
+                    <button class="demo-cam-btn" id="demo-cam-free" data-mode="free" title="Free Orbit View">🌐 Orbit</button>
+                    <button class="demo-cam-btn" id="demo-cam-reset" data-mode="reset" title="Reset View">🔄 Reset</button>
+                  </div>
+                  <button id="btn-demo-fullscreen" class="btn btn-sm btn-secondary demo-fs-btn" title="Toggle Fullscreen Viewport">
+                    ⛶ Fullscreen
+                  </button>
+                  <button id="btn-exit-demo" class="btn btn-sm btn-primary demo-exit-btn" title="Return to Operator Mission Control">
+                    🛠️ Mission Control
+                  </button>
+                </div>
+              </div>
+
+              <!-- Bottom Floating Quick-Destination Dock -->
+              <div class="demo-hud-bottom">
+                <div class="demo-dock-bar">
+                  <div class="demo-dock-title">
+                    <span class="dock-bolt">📍</span>
+                    <span>Quick Tour:</span>
+                  </div>
+                  <div class="demo-dock-chips" id="demo-dock-destinations">
+                    <!-- Populated dynamically with approved destinations -->
+                  </div>
+                  <button id="demo-dock-stop-btn" class="btn btn-sm btn-danger hidden" title="Stop Navigation Immediately">
+                    🛑 Emergency Stop
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -75,6 +75,20 @@
   const fullscreenSimBtn = document.getElementById("btn-fullscreen-sim");
   const mobileTabBtns = document.querySelectorAll(".tab-btn[data-target]");
 
+  // Mode Switcher & Demo View HUD Elements (Milestone 4B Task 1)
+  const btnModeMission = document.getElementById("btn-mode-mission");
+  const btnModeDemo = document.getElementById("btn-mode-demo");
+  const btnExitDemo = document.getElementById("btn-exit-demo");
+  const btnDemoFullscreen = document.getElementById("btn-demo-fullscreen");
+  const demoHud = document.getElementById("demo-hud");
+  const demoHealthBadge = document.getElementById("demo-health-badge");
+  const demoMissionPill = document.getElementById("demo-mission-pill");
+  const demoMissionText = document.getElementById("demo-mission-text");
+  const demoCancelBtn = document.getElementById("demo-cancel-btn");
+  const demoDockStopBtn = document.getElementById("demo-dock-stop-btn");
+  const demoDockDestinations = document.getElementById("demo-dock-destinations");
+  const demoCamButtons = document.querySelectorAll(".demo-cam-btn[data-mode]");
+
   // --- Initial Setup ---
   document.getElementById("initial-timestamp").textContent = formatTime(new Date());
 
@@ -351,16 +365,28 @@
         connectionText.textContent = "Live & Healthy";
         healthBadge.className = "badge badge-healthy";
         healthBadge.textContent = "HEALTHY";
+        if (demoHealthBadge) {
+          demoHealthBadge.className = "badge badge-healthy";
+          demoHealthBadge.textContent = "HEALTHY";
+        }
       } else if (data.overall_status === "degraded") {
         connectionPill.classList.add("pill-degraded");
         connectionText.textContent = "Degraded Feeds";
         healthBadge.className = "badge badge-degraded";
         healthBadge.textContent = "DEGRADED";
+        if (demoHealthBadge) {
+          demoHealthBadge.className = "badge badge-degraded";
+          demoHealthBadge.textContent = "DEGRADED";
+        }
       } else {
         connectionPill.classList.add("pill-offline");
         connectionText.textContent = "Unhealthy";
         healthBadge.className = "badge badge-unhealthy";
         healthBadge.textContent = "UNHEALTHY";
+        if (demoHealthBadge) {
+          demoHealthBadge.className = "badge badge-unhealthy";
+          demoHealthBadge.textContent = "UNHEALTHY";
+        }
       }
 
       // Detailed subsystems
@@ -374,6 +400,10 @@
       connectionText.textContent = "API Disconnected";
       healthBadge.className = "badge badge-unhealthy";
       healthBadge.textContent = "OFFLINE";
+      if (demoHealthBadge) {
+        demoHealthBadge.className = "badge badge-unhealthy";
+        demoHealthBadge.textContent = "OFFLINE";
+      }
       setHealthItem(hRosVal, false);
       setHealthItem(hNavVal, false);
       setHealthItem(hOdomVal, false);
@@ -463,6 +493,11 @@
 
   function updateActiveMissionCard(activeCmd) {
     if (!activeCmd) {
+      if (demoMissionText) {
+        demoMissionText.textContent = "Ready · Standby in Lobby";
+        if (demoCancelBtn) demoCancelBtn.classList.add("hidden");
+        if (demoDockStopBtn) demoDockStopBtn.classList.add("hidden");
+      }
       // If we previously had an active command that finished, mark complete
       if (activeCommandId) {
         missionStatusBadge.className = "badge badge-healthy";
@@ -501,6 +536,17 @@
       missionDistance.textContent = Number(activeCmd.distance_remaining_m).toFixed(2) + " m";
     } else {
       missionDistance.textContent = "Calculating...";
+    }
+
+    // Demo View HUD Sync (Milestone 4B Task 1)
+    if (demoMissionText) {
+      const dest = activeCmd.destination_name || activeCmd.location_id;
+      const dist = (activeCmd.distance_remaining_m !== null && activeCmd.distance_remaining_m !== undefined)
+        ? `${Number(activeCmd.distance_remaining_m).toFixed(1)}m left`
+        : "Navigating...";
+      demoMissionText.textContent = `🚀 ${dest} · ${dist}`;
+      if (demoCancelBtn) demoCancelBtn.classList.remove("hidden");
+      if (demoDockStopBtn) demoDockStopBtn.classList.remove("hidden");
     }
   }
 
@@ -560,8 +606,45 @@
         });
         locationsList.appendChild(item);
       });
+
+      // Populate Demo View Quick Navigation Dock (Task 1)
+      if (demoDockDestinations) {
+        demoDockDestinations.innerHTML = "";
+        locs.forEach((loc) => {
+          const chip = document.createElement("button");
+          chip.className = "demo-dock-chip";
+          chip.textContent = loc.name;
+          chip.title = `Quick navigate to ${loc.name}`;
+          chip.addEventListener("click", () => {
+            dispatchQuickNav(loc.id, loc.name);
+          });
+          demoDockDestinations.appendChild(chip);
+        });
+      }
     } catch (err) {
       locationsList.innerHTML = `<div class="location-item text-muted">Unable to load locations</div>`;
+    }
+  }
+
+  // --- Quick Dispatch Navigation for Demo View ---
+  async function dispatchQuickNav(locationId, locationName) {
+    try {
+      showToast(`Navigating to ${locationName}...`, 2000);
+      const res = await fetch(`${API_BASE}/navigate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ location_id: locationId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.detail || `Navigation error (${res.status})`, 4000);
+        return;
+      }
+      activeCommandId = data.command_id;
+      showToast(`Navigation to ${locationName} active!`, 3000);
+      fetchRobotStatus();
+    } catch (err) {
+      showToast(`Navigation request failed: ${err.message}`, 4000);
     }
   }
 
@@ -613,6 +696,14 @@
     }
 
     camButtons.forEach((btn) => {
+      if (btn.dataset.mode === activeMode) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+
+    demoCamButtons.forEach((btn) => {
       if (btn.dataset.mode === activeMode) {
         btn.classList.add("active");
       } else {
@@ -721,12 +812,113 @@
     });
   }
 
+  // --- Dashboard Mode Switcher (Task 1: Mission Control vs Demo View) ---
+  function setDashboardMode(mode) {
+    if (mode === "demo") {
+      document.body.classList.add("demo-mode-active");
+      if (btnModeDemo) btnModeDemo.classList.add("active");
+      if (btnModeMission) btnModeMission.classList.remove("active");
+      sessionStorage.setItem("robot_dashboard_mode", "demo");
+      fetchCameraMode();
+    } else {
+      document.body.classList.remove("demo-mode-active");
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+      if (btnModeMission) btnModeMission.classList.add("active");
+      if (btnModeDemo) btnModeDemo.classList.remove("active");
+      sessionStorage.setItem("robot_dashboard_mode", "mission");
+    }
+  }
+
+  function setupModeSwitcher() {
+    if (btnModeMission) {
+      btnModeMission.addEventListener("click", () => setDashboardMode("mission"));
+    }
+    if (btnModeDemo) {
+      btnModeDemo.addEventListener("click", () => setDashboardMode("demo"));
+    }
+    if (btnExitDemo) {
+      btnExitDemo.addEventListener("click", () => setDashboardMode("mission"));
+    }
+
+    // Demo View genuine fullscreen toggle
+    if (btnDemoFullscreen) {
+      btnDemoFullscreen.addEventListener("click", () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+          btnDemoFullscreen.textContent = "↙ Collapse";
+        } else {
+          document.exitFullscreen().catch(() => {});
+          btnDemoFullscreen.textContent = "⛶ Fullscreen";
+        }
+      });
+    }
+
+    // Demo View camera toolbar buttons
+    demoCamButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const mode = btn.dataset.mode;
+        if (mode) {
+          setCameraMode(mode);
+        }
+      });
+    });
+
+    // Escape key handling: exits fullscreen or returns to Mission Control
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.body.classList.contains("demo-mode-active")) {
+          setDashboardMode("mission");
+        }
+      }
+    });
+
+    // Demo View cancellation handlers
+    const triggerStop = async () => {
+      if (!activeCommandId) return;
+      showToast("Stopping navigation...", 2000);
+      try {
+        const res = await fetch(`${API_BASE}/commands/${activeCommandId}/cancel`, {
+          method: "POST",
+        });
+        const data = await res.json();
+        if (res.ok && data.verified_stopped) {
+          showToast("Navigation stopped. Verified robot at rest.", 4000);
+          appendAssistantMessage(
+            `🛑 **Navigation Canceled**: Command \`${activeCommandId}\` stopped successfully. Stationary rest verified.`,
+            null,
+            null
+          );
+        } else {
+          showToast(data.detail || data.message || "Cancellation failed", 4000);
+        }
+      } catch (err) {
+        showToast("Cancellation error: " + err.message, 4000);
+      } finally {
+        fetchRobotStatus();
+      }
+    };
+
+    if (demoCancelBtn) demoCancelBtn.addEventListener("click", triggerStop);
+    if (demoDockStopBtn) demoDockStopBtn.addEventListener("click", triggerStop);
+
+    // Restore saved mode if user was previously in demo mode
+    const savedMode = sessionStorage.getItem("robot_dashboard_mode");
+    if (savedMode === "demo") {
+      setDashboardMode("demo");
+    }
+  }
+
   // --- Initialize Polling Loop ---
   function startPolling() {
     initSimulationViewport();
     setupCameraControls();
     setupFullscreenToggle();
     setupMobileTabs();
+    setupModeSwitcher();
 
     fetchRobotHealth();
     fetchRobotStatus();

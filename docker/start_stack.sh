@@ -15,7 +15,7 @@ echo " Web Visualizer: noVNC (http://localhost:8080)"
 echo "=========================================================="
 
 export DISPLAY=:1
-export RESOLUTION="${RESOLUTION:-1280x800x24}"
+export RESOLUTION="${RESOLUTION:-1280x720x24}"
 
 # 1. Start Virtual Framebuffer (Xvfb)
 rm -f /tmp/.X1-lock /tmp/.X11-unix/X1
@@ -24,8 +24,10 @@ Xvfb ${DISPLAY} -screen 0 ${RESOLUTION} &
 XVFB_PID=$!
 sleep 1
 
-# 2. Start Openbox Window Manager
-echo "[2/6] Starting Openbox window manager..."
+# 2. Start Openbox Window Manager with borderless maximization config
+echo "[2/6] Starting Openbox window manager with borderless maximize rules..."
+mkdir -p /root/.config/openbox
+cp /workspace/gazebo_four_wheel_robot/config/openbox_rc.xml /root/.config/openbox/rc.xml 2>/dev/null || true
 openbox &
 OPENBOX_PID=$!
 sleep 1
@@ -78,17 +80,21 @@ ros2 launch /workspace/gazebo_four_wheel_robot/launch/nav2.launch.py > /tmp/nav2
 NAV2_PID=$!
 sleep 2
 
-# 9. Start Gazebo Sim GUI on the virtual display
-echo "Launching Gazebo Sim GUI on virtual display..."
-gz sim -g &
+# 9. Start Gazebo Sim GUI on the virtual display with clean presentation config
+echo "Launching Gazebo Sim GUI with clean presentation config..."
+mkdir -p /root/.gz/sim/8
+cp /workspace/gazebo_four_wheel_robot/config/gz_gui.config /root/.gz/sim/8/gui.config 2>/dev/null || true
+gz sim -g --gui-config /workspace/gazebo_four_wheel_robot/config/gz_gui.config &
 GZ_GUI_PID=$!
 
-# Initial camera framing for clean view of robot and Lobby (Milestone 4A Task 3)
+# Default presentation view: Angled third-person Follow Robot camera (Milestone 4B Task 4)
 (
     sleep 4
-    echo "Framing initial Gazebo camera (Lobby & corridor view)..."
-    gz service -s /gui/move_to/pose --reqtype gz.msgs.GUICamera --reptype gz.msgs.Boolean --timeout 3000 \
-        --req 'pose: {position: {x: -1.8, y: -6.0, z: 5.5}, orientation: {x: 0.2588, y: 0.0, z: 0.0, w: 0.9659}}' >/dev/null 2>&1 || true
+    echo "Setting default presentation camera (Follow Robot chase view)..."
+    gz service -s /gui/follow --reqtype gz.msgs.StringMsg --reptype gz.msgs.Boolean --timeout 3000 \
+        --req 'data: "four_wheel_robot"' >/dev/null 2>&1 || true
+    gz service -s /gui/follow/offset --reqtype gz.msgs.Vector3d --reptype gz.msgs.Boolean --timeout 3000 \
+        --req 'x: -3.0, y: 0.0, z: 2.2' >/dev/null 2>&1 || true
 ) &
 
 # 10. Start Robot Control FastAPI Server

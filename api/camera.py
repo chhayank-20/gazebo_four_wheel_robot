@@ -42,7 +42,7 @@ class CameraController:
 
     def __init__(self, robot_model_name: str = "four_wheel_robot"):
         self.robot_model_name = robot_model_name
-        self._current_mode: str = CameraMode.RESET.value
+        self._current_mode: str = CameraMode.FOLLOW.value
         self._lock = asyncio.Lock()
 
     def _execute_gz(self, cmd_args: str, timeout: float = 3.0) -> Tuple[bool, str]:

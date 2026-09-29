@@ -17,18 +17,112 @@
           <izz>0.8900</izz>
         </inertia>
       </inertial>
-      <visual name="visual">
+
+      <!-- 1. Main Chassis Hull: Sleek High-Tech Dark Gunmetal -->
+      <visual name="chassis_main">
         <geometry>
           <box>
             <size>0.8 0.5 0.15</size>
           </box>
         </geometry>
         <material>
-          <ambient>0.1 0.3 0.8 1.0</ambient>
-          <diffuse>0.1 0.3 0.8 1.0</diffuse>
-          <specular>0.5 0.5 0.5 1.0</specular>
+          <ambient>0.12 0.16 0.22 1.0</ambient>
+          <diffuse>0.18 0.24 0.32 1.0</diffuse>
+          <specular>0.7 0.8 0.9 1.0</specular>
         </material>
       </visual>
+
+      <!-- 2. Upper Beveled Avionics Deck -->
+      <visual name="chassis_top_deck">
+        <pose>0 0 0.082 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.68 0.44 0.025</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.08 0.10 0.14 1.0</ambient>
+          <diffuse>0.10 0.14 0.20 1.0</diffuse>
+          <specular>0.9 0.9 1.0 1.0</specular>
+        </material>
+      </visual>
+
+      <!-- 3. Forward Direction Arrow / Chevron (High-Visibility Navigation Heading) -->
+      <visual name="heading_indicator_chevron">
+        <pose>0.16 0 0.096 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.16 0.18 0.004</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.0 0.85 1.0 1.0</ambient>
+          <diffuse>0.0 0.90 1.0 1.0</diffuse>
+          <emissive>0.0 0.70 0.95 1.0</emissive>
+        </material>
+      </visual>
+
+      <!-- 4. Front High-Intensity LED Lightbar -->
+      <visual name="front_headlight_bar">
+        <pose>0.401 0 0.02 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.012 0.42 0.035</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.85 0.95 1.0 1.0</ambient>
+          <diffuse>0.90 0.98 1.0 1.0</diffuse>
+          <emissive>0.75 0.90 1.0 1.0</emissive>
+        </material>
+      </visual>
+
+      <!-- 5. Rear High-Visibility LED Taillight Strip -->
+      <visual name="rear_taillight_bar">
+        <pose>-0.401 0 0.02 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.012 0.42 0.025</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.85 0.10 0.10 1.0</ambient>
+          <diffuse>0.95 0.10 0.10 1.0</diffuse>
+          <emissive>0.85 0.15 0.15 1.0</emissive>
+        </material>
+      </visual>
+
+      <!-- 6. Left Flank Cyber Accent Strip -->
+      <visual name="flank_accent_left">
+        <pose>0 0.251 0.01 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.72 0.01 0.02</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.0 0.7 0.9 1.0</ambient>
+          <diffuse>0.0 0.85 1.0 1.0</diffuse>
+          <emissive>0.0 0.5 0.75 1.0</emissive>
+        </material>
+      </visual>
+
+      <!-- 7. Right Flank Cyber Accent Strip -->
+      <visual name="flank_accent_right">
+        <pose>0 -0.251 0.01 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.72 0.01 0.02</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.0 0.7 0.9 1.0</ambient>
+          <diffuse>0.0 0.85 1.0 1.0</diffuse>
+          <emissive>0.0 0.5 0.75 1.0</emissive>
+        </material>
+      </visual>
+
+      <!-- Preserved Collision Geometry -->
       <collision name="collision">
         <geometry>
           <box>
@@ -52,7 +146,8 @@
           <izz>0.0123</izz>
         </inertia>
       </inertial>
-      <visual name="visual">
+      <!-- Outer Rubber Tire -->
+      <visual name="tire_visual">
         <pose>0 0 0 1.57079632679 0 0</pose>
         <geometry>
           <cylinder>
@@ -61,9 +156,38 @@
           </cylinder>
         </geometry>
         <material>
-          <ambient>0.15 0.15 0.15 1.0</ambient>
-          <diffuse>0.15 0.15 0.15 1.0</diffuse>
-          <specular>0.3 0.3 0.3 1.0</specular>
+          <ambient>0.08 0.08 0.08 1.0</ambient>
+          <diffuse>0.12 0.12 0.12 1.0</diffuse>
+          <specular>0.2 0.2 0.2 1.0</specular>
+        </material>
+      </visual>
+      <!-- Metallic Alloy Rim Insert -->
+      <visual name="rim_visual">
+        <pose>0 0.002 0 1.57079632679 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.095</radius>
+            <length>0.082</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.45 0.48 0.52 1.0</ambient>
+          <diffuse>0.65 0.70 0.75 1.0</diffuse>
+          <specular>0.9 0.9 1.0 1.0</specular>
+        </material>
+      </visual>
+      <!-- Wheel Center Cap Accent -->
+      <visual name="hub_cap">
+        <pose>0 0.042 0 1.57079632679 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.035</radius>
+            <length>0.006</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.0 0.7 0.9 1.0</ambient>
+          <diffuse>0.0 0.85 1.0 1.0</diffuse>
         </material>
       </visual>
       <collision name="collision">
@@ -102,7 +226,8 @@
           <izz>0.0123</izz>
         </inertia>
       </inertial>
-      <visual name="visual">
+      <!-- Outer Rubber Tire -->
+      <visual name="tire_visual">
         <pose>0 0 0 1.57079632679 0 0</pose>
         <geometry>
           <cylinder>
@@ -111,9 +236,38 @@
           </cylinder>
         </geometry>
         <material>
-          <ambient>0.15 0.15 0.15 1.0</ambient>
-          <diffuse>0.15 0.15 0.15 1.0</diffuse>
-          <specular>0.3 0.3 0.3 1.0</specular>
+          <ambient>0.08 0.08 0.08 1.0</ambient>
+          <diffuse>0.12 0.12 0.12 1.0</diffuse>
+          <specular>0.2 0.2 0.2 1.0</specular>
+        </material>
+      </visual>
+      <!-- Metallic Alloy Rim Insert -->
+      <visual name="rim_visual">
+        <pose>0 0.002 0 1.57079632679 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.095</radius>
+            <length>0.082</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.45 0.48 0.52 1.0</ambient>
+          <diffuse>0.65 0.70 0.75 1.0</diffuse>
+          <specular>0.9 0.9 1.0 1.0</specular>
+        </material>
+      </visual>
+      <!-- Wheel Center Cap Accent -->
+      <visual name="hub_cap">
+        <pose>0 0.042 0 1.57079632679 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.035</radius>
+            <length>0.006</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.0 0.7 0.9 1.0</ambient>
+          <diffuse>0.0 0.85 1.0 1.0</diffuse>
         </material>
       </visual>
       <collision name="collision">
@@ -152,7 +306,8 @@
           <izz>0.0123</izz>
         </inertia>
       </inertial>
-      <visual name="visual">
+      <!-- Outer Rubber Tire -->
+      <visual name="tire_visual">
         <pose>0 0 0 1.57079632679 0 0</pose>
         <geometry>
           <cylinder>
@@ -161,9 +316,38 @@
           </cylinder>
         </geometry>
         <material>
-          <ambient>0.15 0.15 0.15 1.0</ambient>
-          <diffuse>0.15 0.15 0.15 1.0</diffuse>
-          <specular>0.3 0.3 0.3 1.0</specular>
+          <ambient>0.08 0.08 0.08 1.0</ambient>
+          <diffuse>0.12 0.12 0.12 1.0</diffuse>
+          <specular>0.2 0.2 0.2 1.0</specular>
+        </material>
+      </visual>
+      <!-- Metallic Alloy Rim Insert -->
+      <visual name="rim_visual">
+        <pose>0 -0.002 0 1.57079632679 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.095</radius>
+            <length>0.082</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.45 0.48 0.52 1.0</ambient>
+          <diffuse>0.65 0.70 0.75 1.0</diffuse>
+          <specular>0.9 0.9 1.0 1.0</specular>
+        </material>
+      </visual>
+      <!-- Wheel Center Cap Accent -->
+      <visual name="hub_cap">
+        <pose>0 -0.042 0 1.57079632679 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.035</radius>
+            <length>0.006</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.0 0.7 0.9 1.0</ambient>
+          <diffuse>0.0 0.85 1.0 1.0</diffuse>
         </material>
       </visual>
       <collision name="collision">
@@ -202,7 +386,8 @@
           <izz>0.0123</izz>
         </inertia>
       </inertial>
-      <visual name="visual">
+      <!-- Outer Rubber Tire -->
+      <visual name="tire_visual">
         <pose>0 0 0 1.57079632679 0 0</pose>
         <geometry>
           <cylinder>
@@ -211,9 +396,38 @@
           </cylinder>
         </geometry>
         <material>
-          <ambient>0.15 0.15 0.15 1.0</ambient>
-          <diffuse>0.15 0.15 0.15 1.0</diffuse>
-          <specular>0.3 0.3 0.3 1.0</specular>
+          <ambient>0.08 0.08 0.08 1.0</ambient>
+          <diffuse>0.12 0.12 0.12 1.0</diffuse>
+          <specular>0.2 0.2 0.2 1.0</specular>
+        </material>
+      </visual>
+      <!-- Metallic Alloy Rim Insert -->
+      <visual name="rim_visual">
+        <pose>0 -0.002 0 1.57079632679 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.095</radius>
+            <length>0.082</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.45 0.48 0.52 1.0</ambient>
+          <diffuse>0.65 0.70 0.75 1.0</diffuse>
+          <specular>0.9 0.9 1.0 1.0</specular>
+        </material>
+      </visual>
+      <!-- Wheel Center Cap Accent -->
+      <visual name="hub_cap">
+        <pose>0 -0.042 0 1.57079632679 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.035</radius>
+            <length>0.006</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.0 0.7 0.9 1.0</ambient>
+          <diffuse>0.0 0.85 1.0 1.0</diffuse>
         </material>
       </visual>
       <collision name="collision">
@@ -291,7 +505,7 @@
     <link name="laser_link">
       <pose relative_to="base_link">0.25 0 0.16 0 0 0</pose>
       <inertial>
-        <mass>0.2</mass>
+        <mass>0.125</mass>
         <inertia>
           <ixx>0.000185</ixx>
           <ixy>0</ixy>
@@ -301,19 +515,55 @@
           <izz>0.00025</izz>
         </inertia>
       </inertial>
-      <visual name="visual">
+
+      <!-- LiDAR Base Pedestal -->
+      <visual name="lidar_pedestal">
+        <pose>0 0 -0.02 0 0 0</pose>
         <geometry>
           <cylinder>
             <radius>0.06</radius>
-            <length>0.08</length>
+            <length>0.04</length>
           </cylinder>
         </geometry>
         <material>
-          <ambient>0.1 0.1 0.1 1.0</ambient>
-          <diffuse>0.15 0.15 0.15 1.0</diffuse>
-          <specular>0.7 0.7 0.7 1.0</specular>
+          <ambient>0.12 0.14 0.18 1.0</ambient>
+          <diffuse>0.18 0.22 0.28 1.0</diffuse>
+          <specular>0.6 0.6 0.7 1.0</specular>
         </material>
       </visual>
+
+      <!-- LiDAR Rotating Sensor Drum Head -->
+      <visual name="lidar_sensor_head">
+        <pose>0 0 0.02 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.052</radius>
+            <length>0.04</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.06 0.08 0.10 1.0</ambient>
+          <diffuse>0.10 0.12 0.15 1.0</diffuse>
+          <specular>0.9 0.9 1.0 1.0</specular>
+        </material>
+      </visual>
+
+      <!-- LiDAR 360-Degree Optical Aperture Ring (Vivid Cyan Sensor Glow) -->
+      <visual name="lidar_aperture_ring">
+        <pose>0 0 0.002 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.054</radius>
+            <length>0.012</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.0 0.85 0.95 1.0</ambient>
+          <diffuse>0.0 0.95 1.0 1.0</diffuse>
+          <emissive>0.0 0.80 0.90 1.0</emissive>
+        </material>
+      </visual>
+
       <collision name="collision">
         <geometry>
           <cylinder>

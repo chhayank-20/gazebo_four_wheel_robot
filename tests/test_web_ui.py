@@ -72,6 +72,9 @@ def test_root_serves_html(client):
     assert "Interactive Robot Chat" in resp.text
     assert "messages-container" in resp.text
     assert "telemetry-sidebar" in resp.text
+    assert "btn-mode-mission" in resp.text
+    assert "btn-mode-demo" in resp.text
+    assert "demo-hud" in resp.text
 
 
 def test_static_stylesheet_served(client):
