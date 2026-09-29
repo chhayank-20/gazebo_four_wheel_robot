@@ -13,7 +13,7 @@ from typing import Callable, Dict, List, Optional, Tuple, Any
 try:
     import rclpy
     from rclpy.node import Node
-    from rclpy.executors import MultiThreadedExecutor
+    from rclpy.executors import MultiThreadedExecutor, SingleThreadedExecutor
     from rclpy.action import ActionClient
     from rclpy.duration import Duration
     import tf2_ros
@@ -66,6 +66,10 @@ class RosAdapter:
         self.tf_buffer = None
         self.tf_listener = None
 
+        # Short-lived pose cache to avoid redundant TF lookups in rapid polling
+        self._cached_pose: Optional[Dict[str, Any]] = None
+        self._cached_pose_time: float = 0.0
+
     def start(self) -> bool:
         """Initializes ROS 2, starts node and background spinning thread."""
         if not HAS_ROS2:
@@ -104,8 +108,8 @@ class RosAdapter:
                 'navigate_to_pose'
             )
 
-            # Multi-threaded Executor in background daemon thread
-            self.executor = MultiThreadedExecutor()
+            # Single-threaded Executor with native event-driven spin
+            self.executor = SingleThreadedExecutor()
             self.executor.add_node(self.node)
 
             self._is_running = True
@@ -117,8 +121,7 @@ class RosAdapter:
     def _spin_worker(self):
         """Worker loop running the ROS 2 executor."""
         try:
-            while self._is_running and rclpy.ok():
-                self.executor.spin_once(timeout_sec=0.05)
+            self.executor.spin()
         except Exception:
             pass
 
@@ -129,14 +132,14 @@ class RosAdapter:
                 return
             self._is_running = False
 
-        if self.spin_thread and self.spin_thread.is_alive():
-            self.spin_thread.join(timeout=1.0)
-
         if self.executor:
             try:
                 self.executor.shutdown()
             except Exception:
                 pass
+
+        if self.spin_thread and self.spin_thread.is_alive():
+            self.spin_thread.join(timeout=1.0)
 
         if self.node:
             try:
@@ -237,6 +240,11 @@ class RosAdapter:
         if not HAS_ROS2 or not self.tf_buffer or not self._is_running:
             return None
 
+        now = time.time()
+        with self._lock:
+            if self._cached_pose is not None and (now - self._cached_pose_time) < 0.15:
+                return self._cached_pose
+
         try:
             t = self.tf_buffer.lookup_transform(
                 "map",
@@ -251,13 +259,17 @@ class RosAdapter:
             yaw = 2.0 * math.atan2(qz, qw)
             stamp = t.header.stamp.sec + t.header.stamp.nanosec * 1e-9
 
-            return {
+            pose_data = {
                 "x": round(x, 4),
                 "y": round(y, 4),
                 "yaw": round(yaw, 4),
                 "frame_id": "map",
                 "timestamp": round(stamp, 4)
             }
+            with self._lock:
+                self._cached_pose = pose_data
+                self._cached_pose_time = now
+            return pose_data
         except Exception:
             return None
 

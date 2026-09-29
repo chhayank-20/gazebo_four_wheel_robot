@@ -32,9 +32,9 @@ openbox &
 OPENBOX_PID=$!
 sleep 1
 
-# 3. Start x11vnc
+# 3. Start x11vnc with low-overhead threading, 30fps screen poll, and update batching
 echo "[3/6] Starting x11vnc server on port 5900..."
-x11vnc -display ${DISPLAY} -forever -shared -nopw -rfbport 5900 -bg
+x11vnc -display ${DISPLAY} -forever -shared -nopw -rfbport 5900 -threads -wait 33 -defer 15 -noxrecord -bg
 sleep 1
 
 # 4. Start websockify / noVNC on port 8080

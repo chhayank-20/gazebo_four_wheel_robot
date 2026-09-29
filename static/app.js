@@ -662,7 +662,7 @@
 
     // Build the dynamic noVNC URL pointing to port 8080 on the current host
     const host = window.location.hostname || "localhost";
-    const vncUrl = `${window.location.protocol}//${host}:8080/vnc.html?autoconnect=true&resize=scale&reconnect=true&reconnect_delay=1500`;
+    const vncUrl = `${window.location.protocol}//${host}:8080/vnc.html?autoconnect=true&resize=scale&reconnect=true&reconnect_delay=1500&quality=6&compression=2&show_dot=false`;
 
     // Only set src if not already set or blank
     if (!simFrame.src || simFrame.src === "about:blank" || simFrame.src.endsWith("about:blank")) {
@@ -933,9 +933,13 @@
     fetchApprovedLocations();
     fetchCameraMode();
 
+    let pollCount = 0;
     pollIntervalId = setInterval(() => {
-      fetchRobotHealth();
       fetchRobotStatus();
+      pollCount++;
+      if (pollCount % 2 === 0) {
+        fetchRobotHealth();
+      }
     }, 1500);
   }
 
